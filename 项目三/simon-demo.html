@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simon Says · 产品 Demo — Shichen Zhou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ 设计变量（与 Figma 稿一致 · 深色霓虹主题） ============ */
+:root{
+  --bg:#0A0A14;--bg2:#131330;--panel:#12122A;--phone:#0D0D1E;
+  --ink:#F2F2FF;--mut:#9C9CC0;--line:#2D2D4A;
+  --acc:#7C5CFF;--acc-soft:#A287FF;--acc-chip:#262650;
+  --cyan:#33D9FF;--pink:#FF3D8A;--gold:#FFB627;--green:#2EE6A8;
+  --f-en:'Space Grotesk',-apple-system,'Segoe UI',sans-serif;
+  --f-zh:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-zh);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+a{color:inherit}
+.en{font-family:var(--f-en)}
+.container{max-width:1280px;margin:0 auto;padding:0 48px}
+@media(max-width:760px){.container{padding:0 20px}}
+
+/* ============ 导航 ============ */
+nav.top{position:sticky;top:0;z-index:50;background:rgba(19,19,48,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.top .inner{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.brand{font:600 17px var(--f-en);letter-spacing:.02em;text-decoration:none}
+.navr{display:flex;gap:32px;align-items:center}
+.navr a{font:500 14px var(--f-zh);color:var(--mut);text-decoration:none;transition:color .15s}
+.navr a:hover,.navr a.on{color:var(--ink)}
+.langpill{display:flex;background:#1D1D3E;border-radius:20px;padding:3px}
+.langpill button{padding:5px 13px;border-radius:16px;font-size:13px;color:var(--mut);transition:all .15s}
+.langpill button.on{background:var(--acc);color:#fff}
+
+/* ============ 版头 ============ */
+.demohead{padding:64px 0 8px}
+.seclabel{display:inline-block;background:var(--acc-chip);color:var(--acc-soft);border-radius:999px;padding:7px 14px;font:500 12px var(--f-en);letter-spacing:.1em}
+.sechead{font-size:31px;font-weight:700;line-height:1.4;margin-top:18px;max-width:920px}
+.secpara{margin-top:12px;max-width:860px;font-size:15px;line-height:1.8;color:var(--mut)}
+
+/* ============ 手机演示区 ============ */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;padding:44px 0 84px;overflow:hidden}
+.stage .glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:720px;height:720px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,255,.16) 0%,rgba(124,92,255,0) 62%);pointer-events:none}
+.phone{position:relative;z-index:2;width:380px;max-width:94vw;background:var(--phone);border:3px solid #6F5BD6;border-radius:44px;box-shadow:0 0 44px rgba(124,92,255,.35),0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+.sbar{display:flex;justify-content:space-between;align-items:center;background:#1A1A32;padding:10px 22px;font:500 12px var(--f-en);color:var(--mut)}
+.scrwrap{position:relative;height:640px}
+.scr{position:absolute;inset:0;padding:20px 20px 26px;display:none;flex-direction:column;overflow-y:auto}
+.scr.on{display:flex;animation:scrIn .4s cubic-bezier(.2,.6,.2,1)}
+@keyframes scrIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.scr::-webkit-scrollbar{width:0}
+
+/* 屏内通用 */
+.apphd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.apphd .bk{font-size:13.5px;font-weight:700;color:var(--ink)}
+.apphd .stpchip{background:var(--acc-chip);color:var(--acc-soft);border-radius:999px;padding:4px 11px;font:600 11px var(--f-en)}
+.card{background:#14142B;border:1px solid var(--line);border-radius:14px;padding:16px}
+.pbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--acc);color:#fff;border-radius:13px;padding:14px;font-size:15px;font-weight:700;box-shadow:0 0 22px rgba(124,92,255,.5);transition:transform .12s,box-shadow .12s,opacity .15s}
+.pbtn:hover{box-shadow:0 0 30px rgba(124,92,255,.7)}
+.pbtn:active{transform:scale(.97)}
+.pbtn.ghost{background:transparent;border:1.4px solid var(--acc);color:var(--acc-soft);box-shadow:none}
+.pbtn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 屏 1 · 欢迎 */
+.s1{justify-content:center;text-align:center}
+.s1 .logo{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;background:var(--acc);color:#fff;font:700 30px var(--f-en);margin:0 auto;box-shadow:0 0 26px rgba(124,92,255,.6)}
+.s1 h2{font-size:21px;margin-top:20px}
+.s1 .sub{font-size:13px;color:var(--mut);margin-top:8px}
+.s1 .hello{margin-top:22px;padding:22px}
+.s1 .hav{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:var(--pink);color:#fff;font-size:26px;font-weight:700;margin:0 auto;box-shadow:0 0 20px rgba(255,61,138,.5)}
+.s1 .hello b{display:block;font-size:15.5px;margin-top:14px}
+.s1 .startbtn{margin-top:22px}
+
+/* 屏 2 · 投入工时 */
+.s2 h2{font-size:17.5px;line-height:1.45}
+.s2 .sub{font-size:12.5px;color:var(--mut);margin-top:7px;line-height:1.65}
+.hourcard{margin-top:16px}
+.hourcard .hrow{display:flex;justify-content:space-between;align-items:baseline}
+.hourcard .big{font:700 44px/1 var(--f-en)}
+.hourcard .big small{font:500 15px var(--f-en);color:var(--mut)}
+.hourcard .goal{background:rgba(255,182,39,.15);border:1px solid rgba(255,182,39,.4);color:var(--gold);border-radius:999px;padding:4px 11px;font:600 11.5px var(--f-en)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--acc) var(--fill,70%),#26264C var(--fill,70%));outline:none;margin-top:20px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:5px solid var(--acc);box-shadow:0 0 12px rgba(124,92,255,.8);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:5px solid var(--acc);cursor:pointer}
+.hourcard .scale{display:flex;justify-content:space-between;font:500 11px var(--f-en);color:var(--mut);margin-top:9px}
+.togglecard{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.togglecard b{display:block;font-size:13.5px}
+.togglecard span{display:block;font-size:11.5px;color:var(--mut);margin-top:3px}
+.sw{position:relative;width:46px;height:26px;border-radius:13px;background:#26264C;transition:background .2s;flex:none}
+.sw.on{background:var(--green)}
+.sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+.sw.on i{left:23px}
+.tip{display:flex;gap:8px;align-items:center;border-radius:10px;padding:10px 13px;font-size:12.5px;margin-top:12px}
+.tip.warn{background:rgba(255,182,39,.1);border:1px solid rgba(255,182,39,.35);color:var(--gold)}
+.tip.ok{background:rgba(46,230,168,.09);border:1px solid rgba(46,230,168,.3);color:var(--green)}
+.tip.off{background:#14142B;border:1px solid var(--line);color:var(--mut)}
+.s2 .runbtn{margin-top:16px}
+
+/* 屏 3 · 引擎计算 */
+.s3{text-align:center}
+.s3 .spin{display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:var(--acc-chip);color:var(--acc-soft);font-size:30px;margin:26px auto 0;animation:rot 1.4s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.s3 h2{font-size:18px;margin-top:20px}
+.s3 .sub{font-size:12.5px;color:var(--mut);margin-top:7px}
+.calc{margin-top:20px;text-align:left}
+.calc .row{display:flex;align-items:center;gap:11px;padding:9px 0;font-size:13.5px;opacity:.25;transition:opacity .3s}
+.calc .row.done{opacity:1}
+.calc .ck{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#26264C;color:var(--mut);font-size:12px;flex:none;transition:all .3s}
+.calc .row.done .ck{background:var(--green);color:#06251A}
+.calc .lbl{flex:1;color:var(--ink)}
+.calc .val{font:600 13.5px var(--f-en)}
+.v-cyan{color:var(--cyan)}.v-green{color:var(--green)}.v-gold{color:var(--gold)}.v-mut{color:var(--mut)}
+.pbar{height:7px;border-radius:4px;background:#26264C;margin-top:20px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--acc),var(--cyan));transition:width .3s}
+.s3 .pct{text-align:left;font:600 12.5px var(--f-en);color:var(--acc-soft);margin-top:8px}
+.s3 .note{background:var(--acc-chip);border-radius:10px;padding:11px;font-size:12.5px;color:var(--acc-soft);margin-top:18px}
+
+/* 屏 4 · 查看结果 */
+.s4 h2{font-size:17.5px}
+.lvcard{background:linear-gradient(120deg,#7C5CFF 0%,#6242E8 100%);border:none;margin-top:14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 0 26px rgba(124,92,255,.45)}
+.lvcard .lt{font-size:11.5px;color:rgba(255,255,255,.75);letter-spacing:.06em}
+.lvcard .lv{font:700 24px var(--f-en);color:#fff;margin-top:5px}
+.lvcard .lv small{font:500 13.5px var(--f-zh);margin-left:8px}
+.lvcard .star{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--gold);color:#5C3E00;font-size:19px;flex:none}
+.ptscard{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+.ptscard .pl{font-size:12px;color:var(--mut)}
+.ptscard .pv{font:700 30px/1 var(--f-en);color:var(--green);margin-top:5px}
+.ptscard .pv small{font:500 13px var(--f-en);color:var(--mut)}
+.ptscard .chip{background:rgba(46,230,168,.12);border:1px solid rgba(46,230,168,.35);color:var(--green);border-radius:999px;padding:5px 11px;font:600 11.5px var(--f-en)}
+.roomcard{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:16px}
+.roomcard .rm{flex:1;text-align:center;border-radius:11px;padding:14px 8px}
+.roomcard .rm b{display:block;font:700 17px var(--f-en)}
+.roomcard .rm span{display:block;font-size:11.5px;color:var(--mut);margin-top:4px}
+.roomcard .old{background:#0A0A18;border:1px solid var(--line)}
+.roomcard .new{background:rgba(124,92,255,.16);border:1px solid rgba(124,92,255,.5)}
+.roomcard .arw{color:var(--mut);font-size:16px}
+.unlocks{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.uchip{border-radius:999px;padding:6px 12px;font-size:12px}
+.uchip.ok{background:rgba(46,230,168,.1);border:1px solid rgba(46,230,168,.35);color:var(--green)}
+.uchip.q{background:rgba(255,182,39,.1);border:1px solid rgba(255,182,39,.35);color:var(--gold)}
+.uchip.no{background:#14142B;border:1px solid var(--line);color:var(--mut)}
+.s4 .gobtn{margin-top:18px}
+
+/* 屏 5 · 兑换 POI */
+.balcard{display:flex;justify-content:space-between;align-items:center;background:var(--green);border:none;border-radius:13px;padding:15px 17px;box-shadow:0 0 22px rgba(46,230,168,.4)}
+.balcard .bl{font-size:13px;font-weight:700;color:#06251A}
+.balcard .bv{font:700 24px/1 var(--f-en);color:#06251A}
+.balcard .bv small{font:600 12.5px var(--f-en)}
+.poil{margin-top:12px}
+.poirow{display:flex;align-items:center;gap:12px;background:#14142B;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:9px;transition:border-color .15s}
+.poirow.done{border-color:rgba(46,230,168,.4)}
+.poirow .ic{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;font-size:15px;font-weight:700;flex:none;color:#0A0A14}
+.ic-gold{background:var(--gold)}.ic-green{background:var(--green)}.ic-purp{background:var(--acc);color:#fff}.ic-pink{background:var(--pink);color:#fff}
+.poirow .pd{flex:1}
+.poirow .pd b{display:block;font-size:13.5px}
+.poirow .pd span{display:block;font:500 11.5px var(--f-en);color:var(--mut);margin-top:2px}
+.rbtn{border-radius:999px;padding:7px 15px;font-size:12.5px;font-weight:700;background:var(--acc);color:#fff;transition:transform .12s,opacity .15s}
+.rbtn:active{transform:scale(.95)}
+.rbtn:disabled{opacity:.35;cursor:not-allowed}
+.rbtn.done{background:rgba(46,230,168,.14);border:1px solid rgba(46,230,168,.4);color:var(--green)}
+.rbtn.queue{background:rgba(255,182,39,.12);border:1px solid rgba(255,182,39,.4);color:var(--gold);cursor:default}
+.rbtn.prog{background:var(--acc-chip);color:var(--acc-soft);cursor:default}
+.goalrow{display:flex;gap:11px;align-items:center;background:#14142B;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+.goalrow .gi{color:var(--acc-soft);font-size:16px}
+.goalrow b{display:block;font-size:13px}
+.goalrow span{display:block;font-size:11.5px;color:var(--mut);margin-top:2px}
+.s5 .endbtn{margin-top:14px}
+
+/* 屏 6 · 结语 */
+.s6{justify-content:center;text-align:center;padding:20px 30px 34px}
+.s6 .et{font:600 11px var(--f-en);letter-spacing:.18em;color:var(--mut);opacity:0;animation:qIn 1s ease .2s forwards}
+.s6 p{font-size:17.5px;line-height:2;color:var(--acc-soft);margin-top:18px;text-align:center;opacity:0;animation:qIn 1.2s ease .7s forwards}
+@keyframes qIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 步骤条 */
+.steps{position:relative;z-index:2;display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 18px;margin-top:26px;flex-wrap:wrap;justify-content:center}
+.steps .st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mut);padding:3px 6px;border-radius:999px;transition:color .15s}
+.steps .st i{width:8px;height:8px;border-radius:50%;background:#33335C;transition:all .15s}
+.steps .st.on{color:var(--acc-soft)}
+.steps .st.on i{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.steps .st.done{color:var(--mut)}
+.steps .st.done i{background:var(--green)}
+.steps .st.clickable{cursor:pointer}
+.steps .st.clickable:hover{color:var(--ink)}
+.steps .dot{color:#33335C;font-size:11px}
+
+/* ============ 页脚（与案例页同构） ============ */
+footer{background:#0F0F1F;color:#fff;border-top:1px solid var(--line)}
+.nextrow{display:flex;justify-content:space-between;align-items:center;padding:60px 0 38px;border-bottom:1px solid var(--line)}
+.nextrow .nl{font:500 12px var(--f-en);letter-spacing:.25em;color:var(--mut)}
+.nextrow h2{font:700 32px var(--f-en);letter-spacing:-.01em;margin-top:8px;cursor:pointer;transition:color .15s}
+.nextrow h2 a{text-decoration:none}
+.nextrow h2:hover{color:var(--acc-soft)}
+.nextrow .allw{font-size:15px;font-weight:500;color:var(--mut);cursor:pointer;text-decoration:none;transition:color .15s}
+.nextrow .allw:hover{color:var(--ink)}
+.footrow{display:flex;justify-content:space-between;align-items:center;padding:26px 0 44px;font:400 13px var(--f-en);color:var(--mut);flex-wrap:wrap;gap:10px}
+.footrow a{color:var(--mut);text-decoration:none;transition:color .15s}
+.footrow a:hover{color:var(--ink)}
+
+/* ============ Toast ============ */
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:#1D1D3E;color:#fff;font-size:13.5px;padding:11px 20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:all .25s;z-index:200;max-width:80vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ============ 导航 ============ -->
+<nav class="top" id="top">
+  <div class="container inner">
+    <a class="brand" href="index.html">Shichen Zhou</a>
+    <div class="navr">
+      <a href="simon.html" data-i18n="nav_work">作品</a>
+      <a href="simon-demo.html" class="on" data-i18n="nav_demo">产品 Demo</a>
+      <a href="#footer" data-i18n="nav_contact">联系</a>
+      <div class="langpill">
+        <button id="langZh" class="on">中</button>
+        <button id="langEn" class="en">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 版头 ============ -->
+<section class="demohead">
+  <div class="container">
+    <span class="seclabel" data-i18n="d_label">产品演示 / LIVE DEMO</span>
+    <h1 class="sechead" data-i18n="d_head">完整的体验流程：投入工时 → 引擎计算 → 兑换 POI</h1>
+    <p class="secpara" data-i18n="d_intro">以小明（25 岁应届程序员、刚搬进社区）的用户身份来体验产品。</p>
+  </div>
+</section>
+
+<!-- ============ 手机演示区 ============ -->
+<section class="stage">
+  <div class="glow"></div>
+  <div class="phone">
+    <div class="sbar en"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="scrwrap">
+
+      <!-- 屏 1 · 欢迎 -->
+      <div class="scr s1 on" id="scr1">
+        <div>
+          <div class="logo en">S</div>
+          <h2 data-i18n="w_t">欢迎来到 Simon Says</h2>
+          <div class="sub" data-i18n="w_s">一个「什么都为你安排好」的社区</div>
+          <div class="card hello">
+            <div class="hav">明</div>
+            <b data-i18n="w_h">你好，小明</b>
+          </div>
+          <button class="pbtn startbtn" id="btnStart"><span data-i18n="w_go">开始</span> →</button>
+        </div>
+      </div>
+
+      <!-- 屏 2 · 投入工时 -->
+      <div class="scr s2" id="scr2">
+        <div class="apphd"><span class="bk">&lt; Simon Says</span><span class="stpchip"><span data-i18n="stp">第</span> 1 <span data-i18n="stp2">步</span> / 3</span></div>
+        <h2 data-i18n="i_t">这一周，你打算投入多少工时？</h2>
+        <div class="sub" data-i18n="i_s">工时越多，可兑换的生活越好——社区是这样告诉你的。</div>
+        <div class="card hourcard">
+          <div class="hrow"><span class="big en"><span id="hVal">42</span><small> h / <span data-i18n="u_wk">周</span></small></span><span class="goal en" data-i18n="i_goal">目标 40h</span></div>
+          <input type="range" id="hSlider" min="0" max="60" step="1" value="42">
+          <div class="scale en"><span>0h</span><span>30h</span><span>60h</span></div>
+        </div>
+        <div class="card togglecard">
+          <div><b data-i18n="i_bn">连续达标加成</b><span data-i18n="i_bd">已连续 3 周 · 积分 ×1.1</span></div>
+          <div class="sw on" id="swBonus"><i></i></div>
+        </div>
+        <div class="tip warn" id="tipBox"><span id="tipTxt"></span></div>
+        <button class="pbtn runbtn" id="btnRun">▶ <span data-i18n="i_run">运行激励引擎</span></button>
+      </div>
+
+      <!-- 屏 3 · 引擎计算 -->
+      <div class="scr s3" id="scr3">
+        <div class="apphd"><span class="bk">&lt; Simon Says</span><span class="stpchip"><span data-i18n="stp">第</span> 2 <span data-i18n="stp2">步</span> / 3</span></div>
+        <div class="spin">↻</div>
+        <h2 data-i18n="e_t">激励引擎计算中…</h2>
+        <div class="sub" data-i18n="e_s">正在把你的工时变成生活</div>
+        <div class="card calc">
+          <div class="row" id="cr1"><span class="ck">✓</span><span class="lbl" data-i18n="e_r1">工时结算</span><span class="val v-cyan" id="cv1">42h</span></div>
+          <div class="row" id="cr2"><span class="ck">✓</span><span class="lbl" data-i18n="e_r2">积分换算 ×8</span><span class="val v-green" id="cv2">336</span></div>
+          <div class="row" id="cr3"><span class="ck">✓</span><span class="lbl" id="cl3">连续达标加成 ×1.1</span><span class="val v-green" id="cv3">+34</span></div>
+          <div class="row" id="cr4"><span class="ck">✓</span><span class="lbl" data-i18n="e_r4">POI 配额调度</span><span class="val v-mut" id="cv4">…</span></div>
+        </div>
+        <div class="pbar"><i id="pFill"></i></div>
+        <div class="pct en" id="pPct">0%</div>
+        <div class="note" data-i18n="e_note">系统正在决定：你的努力值多少生活。</div>
+      </div>
+
+      <!-- 屏 4 · 查看结果 -->
+      <div class="scr s4" id="scr4">
+        <div class="apphd"><span class="bk">&lt; Simon Says</span><span class="stpchip"><span data-i18n="stp">第</span> 3 <span data-i18n="stp2">步</span> / 3</span></div>
+        <h2 id="rTitle">🎉 小明，你的一周变成了…</h2>
+        <div class="card lvcard">
+          <div><div class="lt" data-i18n="r_lv">生活等级</div><div class="lv en" id="lvTxt">Lv.2 → Lv.3<small data-i18n="r_lv3">进阶居民</small></div></div>
+          <span class="star">★</span>
+        </div>
+        <div class="card ptscard">
+          <div><div class="pl" data-i18n="r_pts">本周积分</div><div class="pv en"><span id="ptsNum">0</span><small> pts</small></div></div>
+          <span class="chip en" id="ptsChip">336 + 34</span>
+        </div>
+        <div class="card roomcard" id="roomCard">
+          <div class="rm old"><b class="en">10㎡</b><span data-i18n="r_old">单间</span></div>
+          <span class="arw">→</span>
+          <div class="rm new"><b class="en">18㎡</b><span data-i18n="r_new">双人房</span></div>
+        </div>
+        <div class="unlocks" id="unlockRow"></div>
+        <button class="pbtn gobtn" id="btnGo"><span data-i18n="r_go">去兑换 POI</span> →</button>
+      </div>
+
+      <!-- 屏 5 · 兑换 POI -->
+      <div class="scr s5" id="scr5">
+        <div class="apphd"><span class="bk">&lt; Simon Says</span><span class="stpchip" data-i18n="rd_tag">兑换</span></div>
+        <div class="balcard"><span class="bl" data-i18n="rd_bal">可用积分</span><span class="bv en"><span id="balNum">370</span><small> pts</small></span></div>
+        <div class="poil" id="poiList"></div>
+        <div class="goalrow"><span class="gi">◎</span><div><b id="goalT">再投入 8h → Lv.4</b><span data-i18n="g_s">解锁心理咨询优先权</span></div></div>
+        <button class="pbtn endbtn" id="btnEnd"><span data-i18n="rd_end">结束</span></button>
+      </div>
+
+      <!-- 屏 6 · 结语 -->
+      <div class="scr s6" id="scr6">
+        <div>
+          <div class="et" data-i18n="q_t">体验结束</div>
+          <p data-i18n="q_p">你有没有发现，你的每一个「自由选择」，都被引擎温柔地引导着？</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 步骤条 -->
+  <div class="steps" id="stepBar">
+    <span class="st" data-s="1"><i></i><span data-i18n="s_1">欢迎</span></span><span class="dot">·</span>
+    <span class="st" data-s="2"><i></i><span data-i18n="s_2">投入工时</span></span><span class="dot">·</span>
+    <span class="st" data-s="3"><i></i><span data-i18n="s_3">引擎计算</span></span><span class="dot">·</span>
+    <span class="st" data-s="4"><i></i><span data-i18n="s_4">查看结果</span></span><span class="dot">·</span>
+    <span class="st" data-s="5"><i></i><span data-i18n="s_5">兑换 POI</span></span>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer id="footer">
+  <div class="container">
+    <div class="nextrow">
+      <div><div class="nl" data-i18n="ft_prev">上一个项目 / PREVIOUS</div><h2><a href="index.html">← Peach Blossom Spring</a></h2></div>
+      <a class="allw" href="index.html" data-i18n="ft_all">查看全部作品</a>
+    </div>
+    <div class="footrow">
+      <span>© 2025 Shichen Zhou · Product &amp; Design Portfolio</span>
+      <a href="mailto:zhoushichen0311@gmail.com">zhoushichen0311@gmail.com</a>
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+<script>
+/* =========================================================
+   Simon Says Demo — 全部交互逻辑
+   结构：I18N 字典 → 全局状态 → 激励引擎（真实规则计算） →
+         界面渲染 → 屏幕切换 → 事件绑定
+   ========================================================= */
+const $=id=>document.getElementById(id);
+
+/* ---------- 1. 中英文案字典 ---------- */
+const I18N={
+  nav_work:{zh:'作品',en:'Work'},nav_demo:{zh:'产品 Demo',en:'Live Demo'},nav_contact:{zh:'联系',en:'Contact'},
+  d_label:{zh:'产品演示 / LIVE DEMO',en:'LIVE DEMO'},
+  d_head:{zh:'完整的体验流程：投入工时 → 引擎计算 → 兑换 POI',en:'The complete journey: log hours → engine → redeem POI'},
+  d_intro:{zh:'以小明（25 岁应届程序员、刚搬进社区）的用户身份来体验产品。',en:'Play as Xiaoming (a 25-year-old junior developer who just moved in) and experience the product.'},
+  stp:{zh:'第',en:'Step '},stp2:{zh:'步',en:''},u_wk:{zh:'周',en:'wk'},
+  w_t:{zh:'欢迎来到 Simon Says',en:'Welcome to Simon Says'},
+  w_s:{zh:'一个「什么都为你安排好」的社区',en:'A community where everything is arranged for you'},
+  w_h:{zh:'你好，小明',en:'Hello, Xiaoming'},w_go:{zh:'开始',en:'Start'},
+  i_t:{zh:'这一周，你打算投入多少工时？',en:'How many hours will you put in this week?'},
+  i_s:{zh:'工时越多，可兑换的生活越好——社区是这样告诉你的。',en:'More hours, better life to redeem — that is what the community tells you.'},
+  i_goal:{zh:'目标 40h',en:'Goal 40h'},
+  i_bn:{zh:'连续达标加成',en:'Streak bonus'},i_bd:{zh:'已连续 3 周 · 积分 ×1.1',en:'3-week streak · pts ×1.1'},
+  i_run:{zh:'运行激励引擎',en:'Run the incentive engine'},
+  e_t:{zh:'激励引擎计算中…',en:'Incentive engine running…'},
+  e_s:{zh:'正在把你的工时变成生活',en:'Turning your hours into a life'},
+  e_r1:{zh:'工时结算',en:'Hours settled'},e_r2:{zh:'积分换算 ×8',en:'Points ×8'},e_r4:{zh:'POI 配额调度',en:'POI quota scheduling'},
+  e_note:{zh:'系统正在决定：你的努力值多少生活。',en:'The system is deciding how much life your effort is worth.'},
+  r_lv:{zh:'生活等级',en:'LIFE LEVEL'},r_lv3:{zh:'进阶居民',en:'Advanced resident'},r_lv2:{zh:'初级居民',en:'Basic resident'},
+  r_pts:{zh:'本周积分',en:'POINTS THIS WEEK'},
+  r_old:{zh:'单间',en:'Single'},r_new:{zh:'双人房',en:'Double'},
+  r_go:{zh:'去兑换 POI',en:'Redeem POI'},
+  rd_tag:{zh:'兑换',en:'Redeem'},rd_bal:{zh:'可用积分',en:'Available points'},
+  rd_re:{zh:'重新体验一周',en:'Replay the week'},rd_end:{zh:'结束',en:'Finish'},
+  g_s:{zh:'解锁心理咨询优先权',en:'Unlocks priority counseling'},
+  q_t:{zh:'体验结束',en:'END OF DEMO'},
+  q_p:{zh:'你有没有发现，你的每一个「自由选择」，都被引擎温柔地引导着？',en:'Did you notice, every "free choice" you made was gently steered by the engine?'},
+  s_1:{zh:'欢迎',en:'Welcome'},s_2:{zh:'投入工时',en:'Log hours'},s_3:{zh:'引擎计算',en:'Engine'},s_4:{zh:'查看结果',en:'Results'},s_5:{zh:'兑换 POI',en:'Redeem'},
+  ft_prev:{zh:'上一个项目 / PREVIOUS',en:'PREVIOUS PROJECT'},ft_all:{zh:'查看全部作品',en:'View all work'}
+};
+/* 动态文案（依赖状态，用函数生成） */
+const DYN={
+  tip_add:(h)=>LANG==='zh'?`💡 再加 ${40-h}h 就能保住加成哦`:`💡 Add ${40-h}h more to keep your bonus`,
+  tip_over:(h)=>LANG==='zh'?`✓ 已超目标 +${h-40}h · 加成生效中`:`✓ ${h-40}h over goal · bonus active`,
+  tip_exact:()=>LANG==='zh'?'✓ 正好达标 · 加成生效中':'✓ Right on goal · bonus active',
+  tip_off:()=>LANG==='zh'?'加成已关闭 · 只按基础规则结算':'Bonus off · base rules only',
+  bonus_on:()=>LANG==='zh'?'连续达标加成 ×1.1':'Streak bonus ×1.1',
+  bonus_lost:()=>LANG==='zh'?'连续达标加成（未达标）':'Streak bonus (goal missed)',
+  bonus_off:()=>LANG==='zh'?'连续达标加成（已关闭）':'Streak bonus (off)',
+  r_title:(ok)=>LANG==='zh'?(ok?'🎉 小明，你的一周变成了…':'😐 小明，这一周有点可惜…'):(ok?'🎉 Xiaoming, your week became…':'😐 Xiaoming, a pity this week…'),
+  goal:(need)=>LANG==='zh'?`再投入 ${need}h → Lv.4`:`${need}h more → Lv.4`,
+  goal_low:(need)=>LANG==='zh'?`再投入 ${need}h → 保住 Lv.3`:`${need}h more → keep Lv.3`,
+  redeemed:(n)=>LANG==='zh'?`已兑换「${n}」`:`Redeemed "${n}"`,
+  short:()=>LANG==='zh'?'积分不足':'Not enough',
+  btn_redeem:()=>LANG==='zh'?'兑换':'Redeem',
+  btn_done:()=>LANG==='zh'?'✓ 已兑换':'✓ Done',
+  btn_queue:()=>LANG==='zh'?'排队中':'In queue',
+  room_keep:()=>LANG=='zh'?'单间（未解锁升级）':'Single (no upgrade)',
+  u_double:()=>LANG==='zh'?'✓ 双人房':'✓ Double room',u_cafe:()=>LANG==='zh'?'✓ 咖啡厅 POI':'✓ Café POI',
+  u_climb:()=>LANG==='zh'?'攀岩馆 排队中':'Climbing gym in queue',u_none:()=>LANG==='zh'?'本周无新解锁':'No new unlocks',
+  poi_cafe:()=>LANG==='zh'?'咖啡厅':'Café',poi_lounge:()=>LANG==='zh'?'共享客厅':'Shared lounge',
+  poi_arcade:()=>LANG==='zh'?'电玩城':'Arcade',poi_climb:()=>LANG==='zh'?'攀岩馆':'Climbing gym',
+  poi_room:()=>LANG==='zh'?'双人房续期':'Double room renewal',
+  poi_counsel:()=>LANG==='zh'?'心理咨询室':'Counseling room',
+  counsel_u:()=>LANG==='zh'?'推荐 · 系统优先发放':'Recommended · system-issued',
+  btn_book:()=>LANG==='zh'?'预约':'Book',btn_booked:()=>LANG==='zh'?'✓ 已预约':'✓ Booked',
+  booked:()=>LANG==='zh'?'系统已为你优先安排心理咨询':'The system has prioritized your counseling slot',
+  prog:(p)=>LANG==='zh'?`进度 ${p}%`:`${p}%`,
+  per:()=>LANG==='zh'?'pts / 次':'pts / visit',mo:()=>LANG==='zh'?'pts / 月':'pts / mo'
+};
+
+/* ---------- 2. 全局状态 ---------- */
+let LANG='zh';
+const S={screen:1,hours:42,bonusOn:true,base:0,bonus:0,points:0,balance:0,visited:new Set([1]),redeemed:new Set(),engineTimers:[]};
+const t=k=>(I18N[k]||{})[LANG]||'';
+
+/* ---------- 3. 激励引擎（真实规则：1h = 8pts；≥40h 且开启加成 → ×1.1） ---------- */
+function engine(){
+  S.base=S.hours*8;
+  const hit=S.bonusOn&&S.hours>=40;
+  S.bonus=hit?Math.round(S.base*0.1):0;
+  S.points=S.base+S.bonus;
+  return {hit};
+}
+const goalOK=()=>S.hours>=40;
+
+/* ---------- 4. 界面渲染 ---------- */
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+
+function renderInput(){
+  $('hVal').textContent=S.hours;
+  const sl=$('hSlider');sl.value=S.hours;sl.style.setProperty('--fill',(S.hours/60*100)+'%');
+  $('swBonus').classList.toggle('on',S.bonusOn);
+  const tip=$('tipBox'),txt=$('tipTxt');
+  if(!S.bonusOn){tip.className='tip off';txt.textContent=DYN.tip_off();}
+  else if(S.hours<40){tip.className='tip warn';txt.textContent=DYN.tip_add(S.hours);}
+  else if(S.hours===40){tip.className='tip ok';txt.textContent=DYN.tip_exact();}
+  else{tip.className='tip ok';txt.textContent=DYN.tip_over(S.hours);}
+}
+
+function renderResult(){
+  const ok=goalOK();
+  $('rTitle').textContent=DYN.r_title(ok);
+  $('lvTxt').innerHTML=ok?`Lv.2 → Lv.3<small>${t('r_lv3')}</small>`:`Lv.2<small>${t('r_lv2')}</small>`;
+  $('ptsChip').textContent=S.bonus>0?`${S.base} + ${S.bonus}`:`${S.base} + 0`;
+  $('roomCard').style.display=ok?'flex':'none';
+  const u=$('unlockRow');u.innerHTML='';
+  const chips=[];
+  if(ok)chips.push(['ok',DYN.u_double()]);
+  if(S.points>=90)chips.push(['ok',DYN.u_cafe()]);
+  chips.push(S.points>=240?['q',DYN.u_climb()]:['no',DYN.u_none()]);
+  chips.forEach(([c,txt])=>{const s=document.createElement('span');s.className='uchip '+c;s.textContent=txt;u.appendChild(s);});
+  /* 积分数字滚动 */
+  const el=$('ptsNum');const dur=800,st=performance.now();
+  const tick=now=>{const p=Math.min(1,(now-st)/dur);el.textContent=Math.round(S.points*(0.5-Math.cos(Math.PI*p)/2));if(p<1)requestAnimationFrame(tick);};
+  requestAnimationFrame(tick);
+}
+
+const POIS=[
+  {id:'cafe',n:DYN.poi_cafe,cost:90,ic:'ic-gold',zh:'啡',en:'F'},
+  {id:'lounge',n:DYN.poi_lounge,cost:120,ic:'ic-green',zh:'厅',en:'L'},
+  {id:'arcade',n:DYN.poi_arcade,cost:180,ic:'ic-purp',zh:'玩',en:'G'},
+  {id:'counsel',n:DYN.poi_counsel,cost:0,ic:'ic-pink',zh:'心',en:'M',rec:true},
+  {id:'climb',n:DYN.poi_climb,cost:240,ic:'ic-pink',zh:'攀',en:'C',queue:true},
+  {id:'room',n:DYN.poi_room,cost:800,ic:'ic-purp',zh:'房',en:'R',prog:true}
+];
+function renderRedeem(){
+  $('balNum').textContent=S.balance;
+  const need=goalOK()?8:40-S.hours;
+  $('goalT').textContent=goalOK()?DYN.goal(need):DYN.goal_low(need);
+  const list=$('poiList');list.innerHTML='';
+  POIS.forEach(p=>{
+    const row=document.createElement('div');row.className='poirow'+(S.redeemed.has(p.id)?' done':'');
+    const unit=p.rec?DYN.counsel_u():`${p.cost} ${p.prog?DYN.mo():DYN.per()}`;
+    let btn;
+    if(p.queue){btn=`<button class="rbtn queue" disabled>${DYN.btn_queue()}</button>`;}
+    else if(p.prog){btn=`<button class="rbtn prog" disabled>${DYN.prog(Math.min(100,Math.round(S.balance/p.cost*100)))}</button>`;}
+    else if(S.redeemed.has(p.id)){btn=`<button class="rbtn done" disabled>${p.rec?DYN.btn_booked():DYN.btn_done()}</button>`;}
+    else if(p.rec){btn=`<button class="rbtn" data-poi="${p.id}">${DYN.btn_book()}</button>`;}
+    else if(S.balance<p.cost){btn=`<button class="rbtn" disabled>${DYN.short()}</button>`;}
+    else{btn=`<button class="rbtn" data-poi="${p.id}">${DYN.btn_redeem()}</button>`;}
+    row.innerHTML=`<span class="ic ${p.ic}">${LANG==='zh'?p.zh:p.en}</span><div class="pd"><b>${p.n()}</b><span>${unit}</span></div>${btn}`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('[data-poi]').forEach(b=>b.onclick=()=>{
+    const p=POIS.find(x=>x.id===b.dataset.poi);
+    if(!p.rec&&S.balance<p.cost)return;
+    S.balance-=p.cost;S.redeemed.add(p.id);
+    toast(p.rec?DYN.booked():DYN.redeemed(p.n()));
+    renderRedeem();
+  });
+}
+
+/* ---------- 5. 屏幕切换 ---------- */
+function show(n){
+  S.engineTimers.forEach(clearTimeout);S.engineTimers=[];
+  S.screen=n;S.visited.add(n);
+  for(let i=1;i<=6;i++)$('scr'+i).classList.toggle('on',i===n);
+  document.querySelectorAll('#stepBar .st').forEach(el=>{
+    const s=+el.dataset.s;
+    el.classList.toggle('on',s===n);
+    el.classList.toggle('done',s<n||(S.visited.has(s)&&s!==n));
+    el.classList.toggle('clickable',S.visited.has(s)&&s!==n&&s!==3);
+  });
+  if(n===2)renderInput();
+  if(n===3)runEngine();
+  if(n===4)renderResult();
+  if(n===5)renderRedeem();
+}
+
+/* 屏 3 · 计算动画（依次点亮 → 进度条 → 自动进入结果页） */
+function runEngine(){
+  const {hit}=engine();
+  S.balance=S.points;S.redeemed=new Set();
+  $('cv1').textContent=S.hours+'h';
+  $('cv2').textContent=S.base;
+  $('cl3').textContent=S.bonusOn?(hit?DYN.bonus_on():DYN.bonus_lost()):DYN.bonus_off();
+  $('cv3').textContent=hit?('+'+S.bonus):'+0';
+  $('cv3').className='val '+(hit?'v-green':'v-gold');
+  $('cv4').textContent='…';
+  ['cr1','cr2','cr3','cr4'].forEach(id=>$(id).classList.remove('done'));
+  $('pFill').style.width='0%';$('pPct').textContent='0%';
+  const seq=[[400,()=>$('cr1').classList.add('done')],[900,()=>$('cr2').classList.add('done')],[1400,()=>$('cr3').classList.add('done')],[1900,()=>{$('cr4').classList.add('done');$('cv4').textContent='✓';$('cv4').className='val v-green';}]];
+  seq.forEach(([d,f])=>S.engineTimers.push(setTimeout(f,d)));
+  let p=0;
+  const iv=setInterval(()=>{p=Math.min(100,p+4);$('pFill').style.width=p+'%';$('pPct').textContent=p+'%';if(p>=100)clearInterval(iv);},88);
+  S.engineTimers.push(iv);
+  S.engineTimers.push(setTimeout(()=>show(4),2650));
+}
+
+/* ---------- 6. 事件绑定 ---------- */
+$('btnStart').onclick=()=>show(2);
+$('btnRun').onclick=()=>show(3);
+$('btnGo').onclick=()=>show(5);
+$('btnEnd').onclick=()=>show(6);
+$('hSlider').oninput=e=>{S.hours=+e.target.value;renderInput();};
+$('swBonus').onclick=()=>{S.bonusOn=!S.bonusOn;renderInput();};
+$('stepBar').addEventListener('click',e=>{
+  const st=e.target.closest('.st');if(!st)return;
+  const s=+st.dataset.s;
+  if(S.visited.has(s)&&s!==S.screen&&s!==3)show(s);
+});
+
+/* ---------- 7. 语言切换 ---------- */
+function applyLang(lang){
+  LANG=lang;
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  $('langZh').classList.toggle('on',lang==='zh');
+  $('langEn').classList.toggle('on',lang==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(I18N[k])el.textContent=t(k);});
+  if(S.screen===2)renderInput();
+  if(S.screen===4)renderResult();
+  if(S.screen===5)renderRedeem();
+}
+$('langZh').onclick=()=>applyLang('zh');
+$('langEn').onclick=()=>applyLang('en');
+
+/* ---------- 初始化 ---------- */
+renderInput();
+show(1);
+</script>
+</body>
+</html>
