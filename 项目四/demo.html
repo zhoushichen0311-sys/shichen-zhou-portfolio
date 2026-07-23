@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBS Evaluator · 产品 Demo — Shichen Zhou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ 设计变量（与 Figma 稿一致） ============ */
+:root{
+  --bg:#FAFAF8;          /* 页面底色 */
+  --band:#F4F1EC;        /* 米色分段底 */
+  --ink:#1A1A1A;         /* 近黑主文字 */
+  --mut:#6B6B6B;         /* 次要文字 */
+  --line:#E2E0DA;        /* 分隔线 */
+  --acc:#C2735E;         /* 赤陶强调色 */
+  --acc-tint:#F6EDE9;    /* 强调色浅底 */
+  --panel:#F9F8F6;       /* 面板浅灰 */
+  --cnv:#F1F0EC;         /* 画布底 */
+  --trk:#E3E1DC;         /* 滑轨底 */
+  --good:#5C9A6B;        /* 状态绿 */
+  --white:#fff;
+  --dark:#1C1C1B;
+  --f-en:'Inter',-apple-system,'Segoe UI',sans-serif;
+  --f-zh:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-zh);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+.en{font-family:var(--f-en)}
+.container{max-width:1280px;margin:0 auto;padding:0 48px}
+@media(max-width:760px){.container{padding:0 20px}}
+
+/* ============ 导航 ============ */
+nav.top{position:sticky;top:0;z-index:50;background:rgba(250,250,248,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.top .inner{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.brand{font:600 17px var(--f-en);letter-spacing:.02em}
+.navr{display:flex;gap:32px;align-items:center}
+.navr a{font:500 14px var(--f-en);color:var(--mut);text-decoration:none;transition:color .15s}
+.navr a:hover,.navr a.on{color:var(--ink)}
+.langpill{display:flex;background:#ECEAE6;border-radius:20px;padding:3px}
+.langpill button{padding:5px 13px;border-radius:16px;font-size:13px;color:var(--mut);transition:all .15s}
+.langpill button.on{background:var(--ink);color:#fff}
+
+/* ============ Hero ============ */
+.hero{display:grid;grid-template-columns:1fr 580px;gap:44px;padding:72px 0 64px;align-items:center}
+@media(max-width:1020px){.hero{grid-template-columns:1fr}}
+.eyebrow{font:600 13px var(--f-en);letter-spacing:.35em;color:var(--acc)}
+.hero h1{font:700 clamp(44px,5.5vw,66px)/1.04 var(--f-en);letter-spacing:-.02em;margin:18px 0 16px}
+.hero .sub{font-size:22px;font-weight:500}
+.hero .intro{margin-top:18px;max-width:540px;font-size:15.5px;line-height:1.75;color:var(--mut)}
+.cta-row{display:flex;gap:16px;align-items:center;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:8px;font-size:15px;font-weight:500;padding:13px 22px;transition:transform .12s,box-shadow .12s}
+.btn:active{transform:scale(.97)}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-acc{background:var(--acc);color:#fff;box-shadow:0 4px 12px rgba(194,115,94,.3)}
+.btn-ghost{background:#fff;border:1.4px solid var(--ink);color:var(--ink)}
+.cta-row .flow{font-size:13px;color:var(--mut)}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);margin-top:42px;padding-top:22px;gap:12px}
+.meta dt{font-size:12px;color:var(--mut);letter-spacing:.08em}
+.meta dd{font-size:14px;font-weight:500;margin-top:6px}
+.hero-img{position:relative;min-height:420px;display:flex;align-items:center}
+.hero-img img{width:100%;height:auto;object-fit:contain;display:block}
+.hero-img figcaption{position:absolute;left:14px;bottom:12px;z-index:2;font-size:12px;color:#fff;background:rgba(26,26,26,.55);padding:5px 10px;border-radius:5px;backdrop-filter:blur(4px)}
+
+/* ============ 分段通用 ============ */
+section.band{background:var(--band)}
+.secpad{padding:76px 0}
+.seclabel{font:600 13px var(--f-en);letter-spacing:.35em;color:var(--acc)}
+.sechead{font-size:31px;font-weight:700;line-height:1.35;margin-top:16px;max-width:900px}
+.secpara{margin-top:18px;max-width:860px;font-size:15.5px;line-height:1.85;color:var(--mut)}
+
+/* ============ 产品演示 ============ */
+.demohint{margin-top:14px;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--mut);background:var(--acc-tint);border:1px solid #EAD8D0;border-radius:20px;padding:7px 14px}
+.demohint .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.appwrap{margin-top:34px;overflow-x:auto}
+.caseline{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.casechip{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 18px;min-width:130px}
+.casechip span{font-size:11.5px;color:var(--mut);letter-spacing:.05em}
+.casechip b{font-size:13.5px;font-weight:600}
+/* ---- 应用窗口 ---- */
+.app{min-width:1080px;background:var(--cnv);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(26,23,20,.10);display:flex;flex-direction:column;height:780px}
+.app.fs{position:fixed;inset:0;z-index:100;border-radius:0;height:100vh;min-width:0}
+body.no-scroll{overflow:hidden}
+.appbar{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border-bottom:1px solid var(--line);padding:12px 20px;gap:14px;flex-wrap:wrap}
+.appbar .lft{display:flex;align-items:center;gap:12px}
+.applogo{width:20px;height:20px;border-radius:5px;background:var(--acc)}
+.appname{font:700 15px var(--f-en)}
+.appdiv{width:1px;height:20px;background:var(--line)}
+.appproj{font-size:13px;color:var(--mut)}
+.apptabs{display:flex;background:#ECEAE6;border-radius:8px;padding:4px;gap:2px}
+.apptabs button{padding:7px 17px;border-radius:6px;font-size:13.5px;color:var(--mut);transition:all .15s}
+.apptabs button.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.appbar .rgt{display:flex;align-items:center;gap:12px}
+.iconbtn{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--mut);border:1px solid var(--line);background:#fff;transition:all .15s}
+.iconbtn:hover{color:var(--ink)}
+.avatar{width:32px;height:32px;border-radius:50%;background:#D9D6D1;display:flex;align-items:center;justify-content:center;font:600 11px var(--f-en);color:#7A766F}
+/* ---- 三栏 ---- */
+.appmain{display:grid;grid-template-columns:290px 1fr 330px;flex:1;min-height:0}
+.spanel{background:var(--panel);padding:20px;display:flex;flex-direction:column;gap:15px;overflow-y:auto;min-height:0}
+.spanel.rt{background:#fff;border-left:1px solid var(--line)}
+.spanel.lf{border-right:1px solid var(--line)}
+.ptitle{font-size:16px;font-weight:700}
+.psub{font-size:11.5px;color:var(--mut);margin-top:3px}
+.pdiv{height:1px;background:var(--line);flex-shrink:0}
+.grouplabel{font-size:12px;font-weight:500;color:var(--mut)}
+/* 控件 */
+.fld{display:flex;flex-direction:column;gap:8px}
+.fldrow{display:flex;justify-content:space-between;align-items:center}
+.fldrow .lab{font-size:12.5px;font-weight:500;color:var(--mut)}
+.fldrow .val{font:600 13px var(--f-en);color:var(--acc)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(to right,var(--acc) 50%,var(--trk) 50%);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.15);cursor:grab}
+input[type=range]::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:#fff;border:3px solid var(--acc);cursor:grab}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{flex:1;padding:9px 0;font:500 13px var(--f-en);color:var(--mut);border-left:1px solid var(--line);transition:all .12s}
+.seg button:first-child{border-left:none}
+.seg button.on{background:var(--ink);color:#fff}
+.dd{position:relative}
+.ddbtn{width:100%;display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 13px;font-size:13px;font-weight:500}
+.ddlist{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.10);z-index:20;overflow:hidden;display:none}
+.dd.open .ddlist{display:block}
+.ddlist button{width:100%;text-align:left;padding:10px 13px;font-size:13px}
+.ddlist button:hover{background:var(--panel)}
+.ddlist button.on{color:var(--acc);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;background:#F4E9E4;font-size:11.5px;font-weight:500;transition:all .15s;border:1px solid transparent}
+.chip .cdot{width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.chip.off{background:#EDEBE7;color:var(--mut)}
+.chip.off .cdot{background:#B5B2AC}
+.meter{display:flex;flex-direction:column;gap:5px}
+.meter .bar{height:5px;border-radius:3px;background:var(--trk);overflow:hidden}
+.meter .bar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.switch{position:relative;width:32px;height:18px;flex-shrink:0;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.switch i{position:absolute;inset:0;background:#CBC8C2;border-radius:9px;transition:.18s}
+.switch i:before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked + i{background:var(--acc)}
+.switch input:checked + i:before{transform:translateX(14px)}
+.rowline{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.rowline .k{color:var(--mut)}
+.rowline .v{font-weight:500}
+.impcard{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:12.5px;font-weight:500;cursor:pointer;transition:border-color .15s}
+.impcard:hover{border-color:#CFCBC4}
+.impcard .st{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:400}
+.impcard .st .sdot{width:6px;height:6px;border-radius:50%}
+.scorecard{display:flex;justify-content:space-between;align-items:center;background:var(--acc-tint);border-radius:10px;padding:15px 17px}
+.scorecard .num{font:700 34px var(--f-en);letter-spacing:-.02em}
+.scorecard .den{font:500 14px var(--f-en);color:var(--mut)}
+.scorecard .slab{font-size:12px;color:var(--mut);font-weight:500}
+.gradepill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #CCDCD2;border-radius:20px;padding:7px 11px;font-size:12px;font-weight:500}
+.gradepill .gdot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.gradepill.bad{border-color:#E5CFC8}
+.gradepill.bad .gdot{background:var(--acc)}
+.stratcard{display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.stratcard .sbar{width:3px;border-radius:2px;background:var(--acc);flex-shrink:0}
+.stratcard b{font-size:12.5px;display:block}
+.stratcard p{font-size:11.5px;color:var(--mut);line-height:1.5;margin-top:2px}
+.aibadge{display:inline-block;background:var(--ink);color:#F2EBDC;font-size:10px;font-weight:500;border-radius:4px;padding:3px 8px;vertical-align:1px}
+.legendrow{display:flex;justify-content:space-between;align-items:center;font-size:11.5px}
+.legendrow .l{display:flex;align-items:center;gap:5px;color:var(--mut)}
+.legendrow .ldot{width:5px;height:5px;border-radius:50%;background:var(--acc)}
+.legendrow .lv{font:600 11.5px var(--f-en)}
+.phasecard{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 13px;cursor:pointer;transition:all .15s}
+.phasecard .pl{display:flex;align-items:center;gap:8px}
+.phasecard .pdot{width:8px;height:8px;border-radius:50%;background:#CBC8C2}
+.phasecard b{font:600 13px var(--f-en)}
+.phasecard .py{font-size:11.5px;color:var(--mut)}
+.phasecard .pf{font-size:11.5px;color:var(--mut)}
+.phasecard.on{background:var(--acc-tint);border-color:var(--acc);border-width:1.4px}
+.phasecard.on .pdot{background:var(--acc)}
+.phasecard.on .pf{color:var(--acc);font-weight:500}
+.togglerow{display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.cmpline{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.cmpline .ck{font-weight:500}
+.cmpline .cv{display:flex;gap:7px;align-items:center;font-family:var(--f-en)}
+.cmpline .old{color:var(--mut)}
+.cmpline .arr{font-weight:500}
+.cmpline .new{font-weight:700;font-size:13px}
+.descbox{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px 14px}
+.descbox b{font-size:12.5px}
+.descbox p{font-size:12px;color:var(--mut);line-height:1.7;margin-top:5px}
+.strip{display:flex;gap:8px}
+.strip .fr{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
+.strip .th{width:100%;height:42px;border-radius:5px;background:#EDEAE5;border:1px solid var(--line);transition:all .15s}
+.strip .fr.on .th{border:2px solid var(--acc)}
+.strip .fr span{font:400 11px var(--f-en);color:var(--mut)}
+.strip .fr.on span{color:var(--acc);font-weight:600}
+.statmini{display:flex;gap:12px}
+.statmini .sc{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.statmini .sk{font-size:11.5px;color:var(--mut)}
+.statmini .sv{font:700 20px var(--f-en);margin-top:3px}
+.statmini .su{font-size:10.5px;color:var(--mut);font-weight:400;margin-left:2px;font-family:var(--f-zh)}
+.compbox{background:var(--acc-tint);border-radius:8px;padding:13px 14px;display:flex;flex-direction:column;gap:9px}
+.compbox .cr{display:flex;justify-content:space-between;align-items:center}
+.compbox b{font-size:12.5px}
+.compbox .cpct{font:700 14px var(--f-en);color:var(--acc)}
+.compbox .cklist{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.compbox .cklist .ck{display:flex;gap:8px;align-items:center}
+.compbox .cklist .ok{color:var(--good);font-family:var(--f-en)}
+.compbox .cklist .no{color:var(--mut);font-family:var(--f-en)}
+/* ---- 中央画布 ---- */
+.stage{position:relative;overflow:hidden;min-height:0}
+.stagezoom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .25s ease}
+.mapbox{position:relative;width:min(92%,720px)}
+.mapbox svg{width:100%;height:auto;display:block;border-radius:10px}
+.cellin{animation:cellin .3s ease both}
+@keyframes cellin{from{opacity:0}to{opacity:.92}}
+[data-cell]{cursor:pointer}
+.float{position:absolute;background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(26,23,20,.12);z-index:5}
+.layers{left:18px;top:18px;padding:13px 15px;display:flex;flex-direction:column;gap:11px;width:158px}
+.layers b{font-size:12px}
+.layers .lr{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut)}
+.zoomctl{right:18px;bottom:76px;display:flex;flex-direction:column;overflow:hidden}
+.zoomctl button{width:40px;height:40px;font:500 16px var(--f-en);border-top:1px solid var(--line);transition:background .12s}
+.zoomctl button:first-child{border-top:none}
+.zoomctl button:hover{background:var(--panel)}
+.scrub{left:50%;transform:translateX(-50%);bottom:18px;display:flex;align-items:center;gap:14px;padding:11px 18px;border-radius:12px;white-space:nowrap}
+.scrub .slab{font-size:12px;font-weight:500;color:var(--mut)}
+.scrub .strack{position:relative;width:190px;height:22px}
+.scrub .sline{position:absolute;top:9px;left:0;right:0;height:4px;border-radius:2px;background:#DEDBD5}
+.scrub .sdot{position:absolute;top:6px;width:10px;height:10px;border-radius:50%;background:#CBC8C2;cursor:pointer;transition:all .15s}
+.scrub .sdot.on{width:14px;height:14px;top:4px;background:var(--acc)}
+.scrub .spl{position:absolute;top:-9px;font:500 9.5px var(--f-en);color:var(--mut);transform:translateX(-40%)}
+.scrub .spl.on{color:var(--ink);font-weight:600}
+.scrub .sinfo{font-size:12px;font-weight:500}
+.statuspill{left:50%;transform:translateX(-50%);bottom:18px;display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:22px;font-size:12.5px;font-weight:500;white-space:nowrap}
+.statuspill .pdot2{width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.toolstrip{left:18px;bottom:76px;display:flex;flex-direction:column;overflow:hidden}
+.toolstrip button{width:40px;height:40px;font-size:14px;border-top:1px solid var(--line)}
+.toolstrip button:first-child{border-top:none}
+.toolstrip button.on{background:var(--acc-tint);color:var(--acc)}
+.legendbox{left:18px;bottom:76px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.legendbox b{font-size:11.5px}
+.legendbox .li{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mut)}
+.legendbox .lsq{width:13px;height:13px;border-radius:3px}
+.cellpop{position:absolute;background:var(--dark);color:#fff;border-radius:9px;padding:10px 13px;z-index:8;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none;transition:opacity .15s}
+.cellpop .cr1{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700}
+.cellpop .cgd{width:7px;height:7px;border-radius:50%}
+.cellpop .cgt{font-size:11px;font-weight:500}
+.cellpop .cr2{font:500 11.5px var(--f-en);color:#CFCCC6;margin-top:3px}
+.runover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:9;background:rgba(241,240,236,.45);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .2s}
+.runover.show{opacity:1}
+.runcard{background:#fff;border-radius:12px;padding:18px 26px;box-shadow:0 10px 30px rgba(0,0,0,.12);text-align:center;min-width:220px}
+.runcard .rt{font-size:13px;font-weight:500}
+.runcard .rbar{height:6px;border-radius:3px;background:var(--trk);margin-top:12px;overflow:hidden}
+.runcard .rbar i{display:block;height:100%;background:var(--acc);border-radius:3px;width:0%;transition:width .1s linear}
+.runcard .rpct{font:600 12px var(--f-en);color:var(--acc);margin-top:8px}
+.emptyhint{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.emptyhint .eh{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--mut);backdrop-filter:blur(3px)}
+/* ============ 复盘 ============ */
+.refgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px}
+@media(max-width:760px){.refgrid{grid-template-columns:1fr}}
+.refcard{background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px 28px}
+.refcard h3{font-size:18px}
+.refcard p{font-size:14.5px;color:var(--mut);line-height:1.75;margin-top:10px}
+.limitbox{display:flex;gap:14px;background:var(--band);border-radius:6px;padding:20px 24px;margin-top:28px}
+.limitbox b{color:var(--acc);font-size:14px;flex-shrink:0}
+.limitbox p{font-size:14px;color:var(--mut);line-height:1.7}
+/* ============ 户型展示 ============ */
+.httabs{display:inline-flex;background:#ECEAE6;border-radius:10px;padding:4px;gap:2px;margin-top:34px}
+.httabs button{padding:9px 22px;border-radius:8px;font-size:14px;color:var(--mut);transition:all .15s}
+.httabs button.on{background:#fff;color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.htpanel{margin-top:24px}
+.htdesc{font-size:14.5px;color:var(--mut);line-height:1.75;max-width:780px;margin-bottom:22px}
+.htgrid{display:grid;grid-template-columns:1fr 1.18fr 1.18fr;gap:16px}
+@media(max-width:960px){.htgrid{grid-template-columns:1fr}}
+.htcard{background:#fff;border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column}
+.htcard .im{flex:1;display:flex;align-items:center;justify-content:center;min-height:280px}
+.htcard img{max-width:100%;max-height:350px;object-fit:contain}
+.htcap{border-top:1px solid var(--line);margin-top:16px;padding-top:12px;display:flex;justify-content:space-between;align-items:baseline}
+.htcap b{font-size:14px}
+.htcap span{font:500 11px var(--f-en);color:var(--mut);letter-spacing:.1em}
+/* ============ Demo 页 ============ */
+.demopage .appwrap{margin-top:30px}
+/* ============ 过渡页（深色） ============ */
+body.introdark{background:var(--dark)}
+body.introdark nav.top{background:rgba(28,28,27,.92);border-bottom:1px solid #34332F}
+body.introdark .brand{color:#F2F0EC}
+body.introdark .navr a{color:#8C8983}
+body.introdark .navr a:hover,body.introdark .navr a.on{color:#fff}
+body.introdark .langpill{background:#33322F}
+body.introdark .langpill button{color:#8C8983}
+body.introdark .langpill button.on{background:#F2EBDC;color:#1A1A1A}
+.iwrap{max-width:1280px;margin:0 auto;padding:64px 48px 88px;display:grid;grid-template-columns:1.02fr .98fr;gap:76px;align-items:center;min-height:calc(100vh - 74px)}
+@media(max-width:1020px){.iwrap{grid-template-columns:1fr;min-height:0}}
+.ihead{font-size:clamp(30px,3.3vw,44px);font-weight:700;line-height:1.28;color:#F5F3EF;margin-top:18px}
+.ipara{margin-top:20px;font-size:15px;line-height:1.9;color:#A8A5A0;max-width:560px}
+.ispecs{margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:0 28px}
+.ispec{border-top:1px solid #3A3936;padding:13px 0 16px}
+.ispec span{font-size:11.5px;color:#7E7B75;letter-spacing:.08em}
+.ispec b{display:block;font-size:14px;color:#E9E7E2;margin-top:5px;font-weight:500}
+.isteps{margin-top:8px}
+.istep2{display:flex;gap:16px;border-top:1px solid #3A3936;padding:14px 0}
+.istep2 .n{font:700 12px/1.9 var(--f-en);color:var(--acc);letter-spacing:.12em;flex-shrink:0;width:52px}
+.istep2 b{display:block;font-size:15px;color:#F0EEE9;font-weight:500}
+.istep2 p{font-size:12.5px;color:#8C8983;line-height:1.65;margin-top:3px}
+.intro-cta{display:flex;gap:16px;align-items:center;margin-top:38px}
+body.introdark .btn-ghost{background:transparent;border-color:#4A4946;color:#E8E6E1}
+body.introdark .btn-ghost:hover{border-color:#F2F0EC}
+.imap svg{width:100%;height:auto;display:block}
+.dashline{animation:dashmove 1s linear infinite}
+@keyframes dashmove{to{stroke-dashoffset:-17}}
+.cellfade{opacity:0;animation:cellfade .6s ease forwards}
+@keyframes cellfade{to{opacity:1}}
+.fadeup{opacity:0;animation:fadeup .8s cubic-bezier(.2,.6,.2,1) forwards}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* ============ 页脚 ============ */
+footer{background:var(--dark);color:#fff}
+.nextrow{display:flex;justify-content:space-between;align-items:center;padding:60px 0 38px;border-bottom:1px solid #464644}
+.nextrow .nl{font:500 12px var(--f-en);letter-spacing:.25em;color:#99968F}
+.nextrow h2{font:700 32px var(--f-en);letter-spacing:-.01em;margin-top:8px;cursor:pointer;transition:color .15s}
+.nextrow h2:hover{color:var(--acc)}
+.nextrow .allw{font-size:15px;font-weight:500;color:#BFBCB6;cursor:pointer}
+.footrow{display:flex;justify-content:space-between;align-items:center;padding:26px 0 44px;font:400 13px var(--f-en);color:#8C8983}
+.footrow .fc{display:flex;gap:24px;color:#BFBCB6}
+/* ============ Toast ============ */
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;font-size:13.5px;padding:11px 20px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:all .25s;z-index:200;max-width:80vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ============ 移动端适配 ============ */
+@media(max-width:900px){
+  /* 应用改为纵向堆叠：参数 → 地图 → 结果 */
+  .appwrap{overflow-x:visible}
+  .app{min-width:0;height:auto}
+  .appmain{grid-template-columns:1fr}
+  .spanel.lf{border-right:none;border-bottom:1px solid var(--line)}
+  .spanel.rt{border-left:none;border-top:1px solid var(--line)}
+  .stage{height:440px}
+  .appbar .appproj,.appbar .avatar,.appdiv{display:none}
+  .layers{width:138px;padding:10px 12px;left:12px;top:12px}
+  .zoomctl{right:12px;bottom:64px}
+  .zoomctl button,.toolstrip button{width:36px;height:36px}
+  .toolstrip{left:12px;bottom:64px}
+  .legendbox{left:12px;bottom:64px;padding:10px 12px}
+  .scrub{padding:8px 12px;gap:8px;bottom:12px}
+  .scrub .sinfo{display:none}
+  .statuspill{bottom:12px;font-size:11px;padding:8px 12px;max-width:92%;white-space:normal;text-align:center}
+  .emptyhint .eh{font-size:12px;padding:10px 14px;margin:0 16px;text-align:center}
+  .app.fs{overflow-y:auto}
+}
+@media(max-width:700px){
+  .nextrow{flex-direction:column;align-items:flex-start;gap:18px;padding:44px 0 28px}
+  .nextrow h2{font-size:26px}
+  .footrow{flex-direction:column;gap:10px;align-items:flex-start;padding:20px 0 36px}
+  .footrow .fc{gap:14px;flex-wrap:wrap}
+}
+@media(max-width:600px){
+  nav.top .inner{padding:12px 0}
+  .brand{font-size:15px}
+  .navr{gap:14px}
+  .navr a{font-size:13px}
+  .langpill button{padding:4px 10px;font-size:12px}
+  .hero{padding:44px 0 40px;gap:30px}
+  .hero .sub{font-size:19px}
+  .hero-img{min-height:0}
+  .sechead{font-size:23px}
+  .secpad{padding:50px 0}
+  .secpara{font-size:14.5px}
+  .htcard{padding:14px}
+  .htcard .im{min-height:180px}
+  .htcard img{max-height:280px}
+  .casechip{min-width:calc(50% - 6px);padding:10px 14px}
+  .cta-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body class="demopage">
+
+<!-- ============ 导航 ============ -->
+<nav class="top" id="top">
+  <div class="container inner">
+    <div class="brand">Shichen Zhou</div>
+    <div class="navr">
+      <a href="index.html" data-i18n="nav_work">作品</a>
+      <a href="demo.html" class="on" data-i18n="nav_demo">产品 Demo</a>
+      <a href="#footer" data-i18n="nav_contact">联系</a>
+      <div class="langpill">
+        <button id="langZh" class="on">中</button>
+        <button id="langEn" class="en">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 产品演示 ============ -->
+<section id="demo">
+  <div class="container secpad">
+    <div class="seclabel" data-i18n="demo_label">产品演示 / LIVE DEMO</div>
+    <h2 class="sechead" data-i18n="demo_head">一次完整的评估流程：输入 → 计算 → 输出</h2>
+
+
+    <div class="appwrap">
+      <div class="app" id="app">
+        <!-- 应用顶栏 -->
+        <div class="appbar">
+          <div class="lft">
+            <div class="applogo"></div>
+            <div class="appname en">PBS Evaluator</div>
+            <div class="appdiv"></div>
+            <div class="appproj" data-i18n="app_proj">石家庄 · 地铁4号线沿线 T-04</div>
+          </div>
+          <div class="apptabs">
+            <button data-tab="site" class="on" data-i18n="tab_site">场地</button>
+            <button data-tab="eval" data-i18n="tab_eval">评估</button>
+            <button data-tab="plan" data-i18n="tab_plan">方案</button>
+          </div>
+          <div class="rgt">
+            <button class="btn btn-acc" id="runTop" style="padding:9px 16px;font-size:13px">▶ <span data-i18n="btn_run">运行评估</span></button>
+            <button class="iconbtn" id="fsBtn" title="全屏">⛶</button>
+            <div class="avatar en">SZ</div>
+          </div>
+        </div>
+
+        <div class="appmain">
+          <!-- ======== 左栏 ======== -->
+          <aside class="spanel lf" id="lfSite">
+            <div><div class="ptitle" data-i18n="site_lt">场地信息</div><div class="psub" data-i18n="site_ls">定义评估对象与数据源</div></div>
+            <div class="pdiv"></div>
+            <div>
+              <div class="rowline"><span class="k" data-i18n="si_loc">位置</span><span class="v" data-i18n="si_loc_v">石家庄 · 长安区</span></div>
+              <div class="rowline"><span class="k" data-i18n="si_area">用地面积</span><span class="v en">12.5 ha</span></div>
+              <div class="rowline"><span class="k" data-i18n="si_use">用地性质</span><span class="v" data-i18n="si_use_v">村庄 + 农田</span></div>
+              <div class="rowline"><span class="k" data-i18n="si_line">所属线路</span><span class="v" data-i18n="si_line_v">地铁 4 号线 · T-04</span></div>
+            </div>
+            <div class="grouplabel" data-i18n="si_import">数据导入（点击切换连接状态）</div>
+            <div style="display:flex;flex-direction:column;gap:9px" id="impList"></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-acc" id="toEval" style="justify-content:center"><span data-i18n="si_next">下一步：开始评估</span> →</button>
+          </aside>
+
+          <aside class="spanel lf" id="lfEval" style="display:none">
+            <div><div class="ptitle" data-i18n="ev_lt">评估参数</div><div class="psub" data-i18n="ev_ls">调整参数实时重算评分</div></div>
+            <div class="pdiv"></div>
+            <div class="fld"><div class="fldrow"><span class="lab" data-i18n="p_farm">农田占比</span><span class="val" id="vFarm">70%</span></div><input type="range" id="sFarm" min="0" max="100" value="70"></div>
+            <div class="fld"><div class="fldrow"><span class="lab" data-i18n="p_transit">过渡住宅比例</span><span class="val" id="vTransit">80%</span></div><input type="range" id="sTransit" min="0" max="100" value="80"></div>
+            <div class="fld"><div class="fldrow"><span class="lab" data-i18n="p_density">建筑密度</span><span class="val" id="vDensity">45%</span></div><input type="range" id="sDensity" min="0" max="100" value="45"></div>
+            <div class="fld"><span class="grouplabel" data-i18n="p_road">主路宽度</span>
+              <div class="seg" id="segRoad"><button data-v="2" class="en">2m</button><button data-v="6" class="on en">6m</button><button data-v="12" class="en">12m</button></div>
+            </div>
+            <div class="fld"><span class="grouplabel" data-i18n="p_phase">目标阶段</span>
+              <div class="dd" id="ddPhase">
+                <button class="ddbtn"><span id="ddPhaseLabel">Phase 2 · 10 年</span><span style="color:var(--mut)">▾</span></button>
+                <div class="ddlist" id="ddPhaseList"></div>
+              </div>
+            </div>
+            <div class="fld"><span class="grouplabel" data-i18n="p_weights">评分维度权重</span>
+              <div class="meter"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="w_i">空间整合度 Integration</span><span class="val en">0.40</span></div><div class="bar"><i style="width:40%"></i></div></div>
+              <div class="meter"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="w_p">私密性 Privacy</span><span class="val en">0.40</span></div><div class="bar"><i style="width:40%"></i></div></div>
+              <div class="meter"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="w_d">建筑密度 Density</span><span class="val en">0.20</span></div><div class="bar"><i style="width:20%"></i></div></div>
+            </div>
+            <div class="fld"><span class="grouplabel" data-i18n="p_data">数据源（点击启停）</span><div class="chips" id="chipRow"></div></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-acc" id="runLeft" style="justify-content:center"><span data-i18n="btn_run2">运行评估</span> ▶</button>
+          </aside>
+
+          <aside class="spanel lf" id="lfPlan" style="display:none">
+            <div><div class="ptitle" data-i18n="pl_lt">方案控制</div><div class="psub" data-i18n="pl_ls">选择阶段与策略</div></div>
+            <div class="pdiv"></div>
+            <div class="grouplabel" data-i18n="pl_phase">演化阶段</div>
+            <div style="display:flex;flex-direction:column;gap:9px" id="phaseCards"></div>
+            <div class="grouplabel" data-i18n="pl_strat">策略选项</div>
+            <div style="display:flex;flex-direction:column;gap:12px" id="stratRows"></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-acc" id="exportLeft" style="justify-content:center"><span data-i18n="btn_export">导出方案</span> ↧</button>
+          </aside>
+
+          <!-- ======== 中央画布 ======== -->
+          <div class="stage" id="stage">
+            <div class="stagezoom" id="stageZoom">
+              <div class="mapbox" id="mapbox">
+                <div id="mapsvg"></div>
+                <div class="cellpop" id="cellpop" style="opacity:0"></div>
+              </div>
+            </div>
+            <!-- 场地 Tab 浮层 -->
+            <div id="floatsSite">
+              <div class="float layers" id="layersSite"></div>
+              <div class="float toolstrip" id="siteTools">
+                <button data-st="in" title="放大 Zoom in">＋</button>
+                <button data-st="out" title="缩小 Zoom out">－</button>
+                <button data-st="fit" title="复位视图 Fit view">⤢</button>
+                <button data-st="bound" class="on" title="划定评估范围 Toggle boundary">▱</button>
+              </div>
+              <div class="float statuspill"><span class="pdot2"></span><span data-i18n="site_pill">评估范围已划定 · 12.5 ha · 8×8 = 64 单元</span></div>
+            </div>
+            <!-- 评估 Tab 浮层 -->
+            <div id="floatsEval" style="display:none">
+              <div class="float layers" id="layersEval"></div>
+              <div class="float zoomctl"><button id="zIn">＋</button><button id="zOut">－</button><button id="zReset">⌖</button></div>
+              <div class="float scrub" id="scrubEval"></div>
+              <div class="emptyhint" id="emptyHint"><div class="eh" data-i18n="eval_empty">尚未评估 —— 设置参数后点击「运行评估」</div></div>
+              <div class="runover" id="runover"><div class="runcard"><div class="rt" data-i18n="run_ing">评分中 · 逐格计算</div><div class="rbar"><i id="runbar"></i></div><div class="rpct en" id="runpct">0%</div></div></div>
+            </div>
+            <!-- 方案 Tab 浮层 -->
+            <div id="floatsPlan" style="display:none">
+              <div class="float layers" id="layersPlan"></div>
+              <div class="float legendbox" id="legendPlan"></div>
+              <div class="float zoomctl"><button id="zIn2">＋</button><button id="zOut2">－</button><button id="zReset2">⌖</button></div>
+              <div class="float scrub" id="scrubPlan"></div>
+            </div>
+          </div>
+
+          <!-- ======== 右栏 ======== -->
+          <aside class="spanel rt" id="rtSite">
+            <div><div class="ptitle" data-i18n="sr_t">场地画像</div><div class="psub" data-i18n="sr_s">数据自动汇总</div></div>
+            <div class="pdiv"></div>
+            <div class="fld"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="p_farm">农田占比</span><span class="val en">70%</span></div><div class="meter"><div class="bar"><i style="width:70%"></i></div></div></div>
+            <div class="fld"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="p_transit">过渡住宅比例</span><span class="val en">80%</span></div><div class="meter"><div class="bar"><i style="width:80%"></i></div></div></div>
+            <div class="fld"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="p_density">建筑密度</span><span class="val" data-i18n="v_low">低</span></div><div class="meter"><div class="bar"><i style="width:30%"></i></div></div></div>
+            <div class="fld"><div class="fldrow"><span class="lab" style="color:var(--ink)" data-i18n="sr_road">路网规划度</span><span class="val" data-i18n="v_low2">低</span></div><div class="meter"><div class="bar"><i style="width:25%"></i></div></div></div>
+            <div class="statmini">
+              <div class="sc"><div class="sk" data-i18n="sr_price">平均房价</div><div class="sv en">1.8w<span class="su" data-i18n="sr_price_u">元/㎡</span></div></div>
+              <div class="sc"><div class="sk" data-i18n="sr_income">月均收入</div><div class="sv en">6.4k<span class="su" data-i18n="sr_income_u">元</span></div></div>
+            </div>
+            <div class="compbox">
+              <div class="cr"><b data-i18n="sr_comp">数据完整度</b><span class="cpct" id="compPct">75%</span></div>
+              <div class="meter"><div class="bar" style="background:#EAD9D2"><i id="compBar" style="width:75%"></i></div></div>
+              <div class="cklist" id="compList"></div>
+            </div>
+          </aside>
+
+          <aside class="spanel rt" id="rtEval" style="display:none">
+            <div><div class="ptitle" data-i18n="er_t">评估结果</div><div class="psub" id="evalScope">—</div></div>
+            <div class="pdiv"></div>
+            <div class="scorecard">
+              <div><div class="slab" data-i18n="er_score">区域质量评分</div><div style="display:flex;align-items:baseline;gap:3px"><span class="num en" id="scoreNum">—</span><span class="den en">/ 10</span></div></div>
+              <div class="gradepill" id="gradePill"><span class="gdot"></span><span id="gradeTxt" data-i18n="er_wait">待评估</span></div>
+            </div>
+            <div class="fld"><span class="grouplabel" data-i18n="er_radar">关键指标</span>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div id="radarBox" style="flex-shrink:0"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px" id="radarLegend"></div>
+              </div>
+            </div>
+            <div class="fld">
+              <span class="grouplabel"><span data-i18n="er_strat">策略建议</span> <span class="aibadge" data-i18n="er_ai">规则生成</span></span>
+              <div style="display:flex;flex-direction:column;gap:9px" id="stratList"></div>
+            </div>
+            <div style="flex:1"></div>
+            <button class="btn btn-ghost" id="exportRight" style="justify-content:center"><span data-i18n="btn_export2">导出报告</span> ↧</button>
+          </aside>
+
+          <aside class="spanel rt" id="rtPlan" style="display:none">
+            <div><div class="ptitle" id="planTitle">方案指标 · Phase 2</div><div class="psub" data-i18n="pr_s">现状 → 目标对比</div></div>
+            <div class="pdiv"></div>
+            <div id="cmpList"></div>
+            <div class="descbox"><b data-i18n="pr_desc">方案说明</b><p id="planDesc"></p></div>
+            <div class="fld"><span class="grouplabel" data-i18n="pr_prev">演化预览</span><div class="strip" id="planStrip"></div></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer id="footer">
+  <div class="container">
+    <div class="nextrow">
+      <div><div class="nl" data-i18n="ft_next">下一个项目 / NEXT</div><h2 id="nextProj">City Memory &nbsp;→</h2></div>
+      <div class="allw" id="allWorks" data-i18n="ft_all">查看全部作品</div>
+    </div>
+    <div class="footrow">
+      <span>© 2026 Shichen Zhou</span>
+      <div class="fc"><span>sczhou240902@163.com</span><span>137 2288 0663</span></div>
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+<script>
+/* =========================================================
+   PBS Evaluator — 全部交互逻辑
+   结构：I18N 字典 → 全局状态 → 评分模型 → 地图渲染 → 界面渲染 → 事件绑定
+   ========================================================= */
+
+/* ---------- 1. 中英文案字典 ---------- */
+const I18N = {
+  nav_work:{zh:'作品',en:'Work'}, nav_demo:{zh:'产品 Demo',en:'Live Demo'}, nav_contact:{zh:'联系',en:'Contact'},
+  ht_label:{zh:'过渡户型 / HOUSING TYPES',en:'HOUSING TYPES'},
+  ht_head:{zh:'从院落到公寓：两代过渡户型设计',en:'From courtyard to apartment: two transitional housing types'},
+  ht_para:{zh:'评估引擎负责判断「哪里适合过渡」，而这两代过渡户型是我设计的空间单元，回答「过渡的居住空间长什么样」。每个户型都经过室内动线与公共 / 私密路径分析，在保留乡土生活方式的同时逐步适应城市居住密度。',en:'The evaluation engine answers where transition should happen; these two housing types are the spatial units I designed to answer what transitional living looks like. Each type is analyzed for interior circulation and public/private paths — adapting to urban density while retaining rural ways of living.'},
+  ht_t1:{zh:'过渡户型 1',en:'Type 1'}, ht_t2:{zh:'过渡户型 2',en:'Type 2'},
+  ht_d1:{zh:'两层布局，保留乡村住宅多代同堂的居住结构；流线简单，具备一定私密性 —— 从院落走向公寓的第一步。',en:'A two-storey layout retaining the multi-generational structure of rural houses; simple circulation with moderate privacy — the first step from courtyard toward apartment.'},
+  ht_d2:{zh:'单层集中布局，更接近城市公寓的空间组织；流线简单，私密性好 —— 过渡的第二阶段。',en:'A compact single-storey layout closer to an urban apartment; simple circulation with good privacy — the second stage of transition.'},
+  ht_plan:{zh:'平面布局',en:'Plan'}, ht_axo:{zh:'轴测拆解',en:'Axonometric'}, ht_route:{zh:'室内动线',en:'Circulation'},
+  hero_sub:{zh:'城乡过渡空间评估引擎',en:'Urban–Rural Transition Evaluation Engine'},
+  hero_intro:{zh:'一个把「城市更新」变成可计算流程的空间评估工具：输入场地现状，系统按整合度、私密性、建筑密度打分，输出分阶段的空间演化策略。',en:'A spatial evaluation tool that turns urban renewal into a computable workflow: input site conditions, score them by integration, privacy and density, and output phased spatial strategies.'},
+  hero_cta:{zh:'试用产品 Demo',en:'Try the Live Demo'},
+  hero_cap:{zh:'产品应用场景 · 城乡过渡带（项目渲染图）',en:'Context · the urban–rural fringe (project render)'},
+  m_role:{zh:'角色',en:'ROLE'}, m_role_v:{zh:'项目负责人',en:'Project Lead'}, m_time:{zh:'周期',en:'TIMELINE'},
+  m_type:{zh:'类型',en:'TYPE'}, m_type_v:{zh:'数据产品 · 空间策略',en:'Data Product · Spatial Strategy'}, m_tool:{zh:'工具',en:'TOOLS'},
+  ctx_label:{zh:'背景 / CONTEXT',en:'CONTEXT'},
+  ctx_head:{zh:'城市化正在吞噬乡土 —— 但没人能「量化」这个过程。',en:'Urbanization is swallowing the countryside — and no one can quantify it.'},
+  ctx_para:{zh:'产品 Demo 以石家庄地铁 4 号线为例，石家庄地铁 4 号线不服务城区，而是伸向乡村，成为城市扩张的工具。原住民被迫改变居住、出行与谋生方式，城乡之间出现一段脆弱的「过渡带」。规划者却缺少工具去评估：这段过渡空间质量如何？会怎样演化？这正是这个产品要解决的问题。',en:'The demo takes Shijiazhuang Metro Line 4 as its example. The line does not serve the city — it reaches into villages as a tool of expansion. Residents are forced to change how they live and move, leaving a fragile transition belt between city and countryside. Planners lack a tool to answer: how good is this transitional space, and how will it evolve? That is the problem this product solves.'},
+  demo_label:{zh:'产品演示 / LIVE DEMO',en:'LIVE DEMO'},
+  demo_head:{zh:'一次完整的评估流程：输入 → 计算 → 输出',en:'One complete workflow: Input → Process → Output'},
+  demo_intro:{zh:'产品 Demo 以石家庄地铁 4 号线沿线的 T-04 地块为例 —— 这条线路不服务城区、直接伸向乡村，沿线的村庄与农田正是典型的「城乡过渡带」。下面的评估流程都基于这一示例场地展开：定义场地 → 运行评估 → 生成方案。',en:'This demo uses plot T-04 along Shijiazhuang Metro Line 4 as its example — a line that skips the city and reaches straight into villages, making the corridor a typical urban–rural transition belt. Everything below runs on this sample site: define the site → run the evaluation → generate the plan.'},
+  app_proj:{zh:'石家庄 · 地铁4号线沿线 T-04',en:'Shijiazhuang · Metro Line 4 · T-04'},
+  tab_site:{zh:'场地',en:'Site'}, tab_eval:{zh:'评估',en:'Evaluate'}, tab_plan:{zh:'方案',en:'Plan'},
+  btn_run:{zh:'运行评估',en:'Run'}, btn_run2:{zh:'运行评估',en:'Run Evaluation'},
+  site_lt:{zh:'场地信息',en:'Site Info'}, site_ls:{zh:'定义评估对象与数据源',en:'Define the site and data sources'},
+  si_loc:{zh:'位置',en:'Location'}, si_loc_v:{zh:'石家庄 · 长安区',en:"Chang'an, Shijiazhuang"},
+  si_area:{zh:'用地面积',en:'Area'}, si_use:{zh:'用地性质',en:'Land use'}, si_use_v:{zh:'村庄 + 农田',en:'Village + farmland'},
+  si_line:{zh:'所属线路',en:'Metro line'}, si_line_v:{zh:'地铁 4 号线 · T-04',en:'Line 4 · T-04'},
+  cl_grid:{zh:'评估网格',en:'Grid'},
+  it_label:{zh:'示例场地 / EXAMPLE SITE',en:'EXAMPLE SITE'},
+  it_head:{zh:'Demo 以石家庄地铁 4 号线沿线为例',en:'The demo runs on Shijiazhuang Metro Line 4'},
+  it_s1:{zh:'定义场地',en:'Define the site'}, it_s1d:{zh:'导入交通 / 房价 / 土地数据，划定 8×8 评估范围',en:'Import traffic, price and land data; set the 8×8 boundary'},
+  it_s2:{zh:'运行评估',en:'Run the evaluation'}, it_s2d:{zh:'按整合度、私密性、建筑密度逐格打分，生成质量热力图',en:'Score every cell by integration, privacy and density'},
+  it_s3:{zh:'生成方案',en:'Generate the plan'}, it_s3d:{zh:'输出 Phase 1–4 分阶段用地策略与指标对比',en:'Output phased land-use strategies for Phase 1–4'},
+  it_enter:{zh:'进入产品 Demo',en:'Enter the Demo'}, it_back:{zh:'返回作品页',en:'Back to the case'},
+  si_import:{zh:'数据导入（点击切换连接状态）',en:'Data import (click to toggle)'},
+  si_next:{zh:'下一步：开始评估',en:'Next: start evaluation'},
+  ev_lt:{zh:'评估参数',en:'Parameters'}, ev_ls:{zh:'调整参数实时重算评分',en:'Adjust to re-score in real time'},
+  p_farm:{zh:'农田占比',en:'Farmland ratio'}, p_transit:{zh:'过渡住宅比例',en:'Transitional housing'}, p_density:{zh:'建筑密度',en:'Building density'},
+  p_road:{zh:'主路宽度',en:'Main road width'}, p_phase:{zh:'目标阶段',en:'Target phase'}, p_weights:{zh:'评分维度权重',en:'Scoring weights'},
+  w_i:{zh:'空间整合度 Integration',en:'Integration'}, w_p:{zh:'私密性 Privacy',en:'Privacy'}, w_d:{zh:'建筑密度 Density',en:'Density'},
+  p_data:{zh:'数据源（点击启停）',en:'Data sources (click to toggle)'},
+  pl_lt:{zh:'方案控制',en:'Plan Controls'}, pl_ls:{zh:'选择阶段与策略',en:'Choose phase & strategies'},
+  pl_phase:{zh:'演化阶段',en:'Evolution phase'}, pl_strat:{zh:'策略选项',en:'Strategy options'},
+  btn_export:{zh:'导出方案',en:'Export Plan'}, btn_export2:{zh:'导出报告',en:'Export Report'},
+  site_pill:{zh:'评估范围已划定 · 12.5 ha · 8×8 = 64 单元',en:'Boundary set · 12.5 ha · 8×8 = 64 cells'},
+  eval_empty:{zh:'尚未评估 —— 设置参数后点击「运行评估」',en:'Not evaluated yet — set parameters and hit Run'},
+  run_ing:{zh:'评分中 · 逐格计算',en:'Scoring cell by cell…'},
+  sr_t:{zh:'场地画像',en:'Site Profile'}, sr_s:{zh:'数据自动汇总',en:'Auto-summarized from data'},
+  sr_road:{zh:'路网规划度',en:'Road planning'}, v_low:{zh:'低',en:'Low'}, v_low2:{zh:'低',en:'Low'},
+  sr_price:{zh:'平均房价',en:'Avg. housing price'}, sr_price_u:{zh:'元/㎡',en:'CNY/㎡'},
+  sr_income:{zh:'月均收入',en:'Avg. income'}, sr_income_u:{zh:'元',en:'CNY/mo'},
+  sr_comp:{zh:'数据完整度',en:'Data completeness'},
+  er_t:{zh:'评估结果',en:'Results'}, er_score:{zh:'区域质量评分',en:'Quality score'}, er_wait:{zh:'待评估',en:'Pending'},
+  er_radar:{zh:'关键指标',en:'Key metrics'}, er_strat:{zh:'策略建议',en:'Suggestions'}, er_ai:{zh:'规则生成',en:'Rule-based'},
+  pr_s:{zh:'现状 → 目标对比',en:'Current → target'}, pr_desc:{zh:'方案说明',en:'Plan notes'}, pr_prev:{zh:'演化预览',en:'Evolution preview'},
+  rf_label:{zh:'复盘 / REFLECTION',en:'REFLECTION'}, rf_head:{zh:'这个项目证明了我的什么',en:'What this project demonstrates'},
+  rf1_t:{zh:'业务抽象',en:'Business abstraction'}, rf1_p:{zh:'把复杂的城市 / 空间业务，提炼成「输入 — 计算 — 输出」的可复用产品逻辑。',en:'Distilling complex urban problems into a reusable input–process–output product logic.'},
+  rf2_t:{zh:'数据 & 量化',en:'Data & quantification'}, rf2_p:{zh:'多源数据清洗、结构化，搭建指标框架与可计算的评分模型。',en:'Cleaning multi-source data and building a metric framework with a computable scoring model.'},
+  rf3_t:{zh:'结构化思维',en:'Structured thinking'}, rf3_p:{zh:'用规则与网格，把主观的「空间好坏」变成可比较、可验证的标准。',en:'Turning subjective spatial quality into comparable, verifiable standards through rules and grids.'},
+  rf4_t:{zh:'方案输出',en:'Solution delivery'}, rf4_p:{zh:'以分阶段路线图呈现演化路径，模拟不同条件下的空间与功能变化。',en:'Delivering phased roadmaps that simulate spatial change under different conditions.'},
+  rf_lim:{zh:'局限',en:'Limits'},
+  rf_lim_p:{zh:'这是一次学术性研究，评分维度与权重基于设定假设，仍需真实运营数据校准；它更像一个「可被验证的产品原型」，而非成熟系统。本页 Demo 的评分逻辑为真实可运行的规则模型，非后端 AI 服务。',en:'This began as academic research: the scoring dimensions and weights are assumptions that still need calibration with real data. It is a verifiable product prototype, not a mature system. The demo on this page runs a real rule-based model in your browser, not a backend AI service.'},
+  ft_next:{zh:'下一个项目 / NEXT',en:'NEXT PROJECT'}, ft_all:{zh:'查看全部作品',en:'View all work'}, ft_pp:{zh:'产品作品集',en:'Product Portfolio'},
+  /* 动态文案 */
+  phase_y:{zh:'年',en:'yr'}, farm_s:{zh:'农田',en:'Farm'},
+  grade_good:{zh:'适宜过渡',en:'Balanced'}, grade_mid:{zh:'过渡失衡',en:'Unbalanced'}, grade_low:{zh:'断裂风险',en:'At risk'},
+  scope_all:{zh:'整体均值',en:'Site average'}, cell_score:{zh:'质量评分',en:'Score'},
+  rl_i:{zh:'整合度',en:'Integration'}, rl_p:{zh:'私密性',en:'Privacy'}, rl_g:{zh:'绿地率',en:'Green ratio'},
+  rl_d:{zh:'建筑密度',en:'Density'}, rl_t:{zh:'交通密度',en:'Traffic'}, rl_f:{zh:'设施覆盖',en:'Facilities'},
+  ly_base:{zh:'底图',en:'Basemap'}, ly_grid:{zh:'评估网格',en:'Grid'}, ly_heat:{zh:'质量热力',en:'Heatmap'},
+  ly_hot:{zh:'数据热区',en:'Data hotspots'}, ly_bound:{zh:'评估范围',en:'Boundary'},
+  ly_plan:{zh:'用地方案',en:'Land-use plan'}, ly_roads:{zh:'新增道路',en:'New roads'}, ly_title:{zh:'图层',en:'Layers'},
+  lg_title:{zh:'用地图例',en:'Land use'}, lg_farm:{zh:'农田',en:'Farmland'}, lg_house:{zh:'过渡住宅',en:'Housing'},
+  lg_green:{zh:'绿地',en:'Green'}, lg_road:{zh:'新增主路',en:'New road'},
+  imp_traffic:{zh:'交通数据',en:'Traffic data'}, imp_price:{zh:'房价 · 收入',en:'Price · income'},
+  imp_land:{zh:'土地 · 路网',en:'Land · roads'}, imp_pop:{zh:'人口结构',en:'Demographics'},
+  st_on:{zh:'已连接',en:'Connected'}, st_off:{zh:'待导入',en:'Pending'},
+  chip_acc:{zh:'事故率',en:'Accidents'}, chip_metro:{zh:'地铁使用率',en:'Metro usage'}, chip_price:{zh:'房价',en:'Prices'}, chip_income:{zh:'收入',en:'Income'},
+  strat_swap:{zh:'置换农田为过渡住宅',en:'Swap farmland → housing'}, strat_roads:{zh:'新增 6m 主路',en:'Add 6m main roads'},
+  strat_court:{zh:'保留院落式住宅',en:'Keep courtyard housing'}, strat_green:{zh:'增加公共绿地',en:'Add public green'},
+  cmp_farm:{zh:'农田占比',en:'Farmland'}, cmp_transit:{zh:'过渡住宅比例',en:'Transitional housing'},
+  cmp_density:{zh:'建筑密度',en:'Density'}, cmp_green:{zh:'绿地率',en:'Green ratio'}, cmp_priv:{zh:'私密性',en:'Privacy'},
+  den_low:{zh:'低',en:'Low'}, den_mid:{zh:'中',en:'Mid'}, den_midhigh:{zh:'中高',en:'Mid-high'}, den_high:{zh:'高',en:'High'},
+  plan_title:{zh:'方案指标',en:'Plan Metrics'},
+  toast_soon:{zh:'该页面即将上线 · Coming soon',en:'Coming soon'},
+  toast_export:{zh:'报告已导出（Markdown 文件）',en:'Report exported as Markdown'},
+  toast_chip_on:{zh:'数据源已启用，评分已更新',en:'Data source enabled — score updated'},
+  toast_chip_off:{zh:'数据源已停用，相关指标使用默认值',en:'Data source disabled — using fallback values'},
+  toast_imp:{zh:'数据完整度已更新',en:'Data completeness updated'},
+  toast_run_first:{zh:'请先点击「运行评估」',en:'Hit “Run Evaluation” first'},
+  run_toast:{zh:'评估完成 · 点击任意网格单元可查看单格评分',en:'Done — click any cell to inspect its score'}
+};
+
+/* ---------- 2. 全局状态 ---------- */
+const S = {
+  lang:'zh', tab:'site', zoom:1,
+  params:{ farm:70, transit:80, density:45, road:6, phase:1 },
+  chips:{ acc:true, metro:true, price:true, income:true },
+  imports:{ traffic:true, price:true, land:true, pop:false },
+  layers:{ // 每个 Tab 各自的图层开关
+    site:{ base:true, hot:false, bound:true },
+    eval:{ base:true, grid:true, heat:true },
+    plan:{ base:true, plan:true, roads:true }
+  },
+  strat:{ swap:true, roads:true, court:true, green:false },
+  hasRun:false, running:false, sel:null // sel = {i,j}
+};
+const t = k => (I18N[k]||{})[S.lang] || k;
+const $ = id => document.getElementById(id);
+const PH_FARM = {1:70,2:50,3:30,4:20}, PH_YEAR = {1:5,2:10,3:15,4:20};
+
+/* ---------- 3. 评分模型（真实可运行的规则模型） ----------
+   核心思想（来自原研究）：「两端为差、中段为优」——
+   过度城市化或过度乡村化都会让三个维度严重失衡，因此在
+   加权得分之外增加一个「失衡惩罚」：维度差距超过 0.2 就扣分 */
+const CFG = { i0:0.52, iN:0.16, iCross:0.10, iTransit:0.25, iFarm:0.30, iPhase:0.05,
+              p0:0.74, pN:0.14, pDen:0.45, pTransit:0.10, pFarm:0.08, pPhase:0.05,
+              dK:0.9, d0:0.22, dN:0.12, dPhase:0.06, pen:7, penT:0.2 };
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ROADB={2:-0.10,6:.08,12:.15};
+function scoreOf(I,P,D){
+  const raw=(I*.4+P*.4+D*.2)*10;
+  const spread=Math.max(I,P,D)-Math.min(I,P,D);      // 维度失衡程度
+  return clamp(raw-CFG.pen*Math.max(0,spread-CFG.penT),1,10);
+}
+function cellMetrics(i,j,p){
+  const b1=Math.sin(i*.7+1.1)*Math.cos(j*.8-.4), b2=Math.cos(i*1.3+j*.5);
+  const cross=(i===3||i===4||j===3||j===4)?CFG.iCross:0;
+  const I=clamp(CFG.i0+CFG.iN*b1+cross+ROADB[p.road]+(p.transit-50)/100*CFG.iTransit-(p.farm-50)/100*CFG.iFarm+(p.phase-2)*CFG.iPhase,.05,.95);
+  const P=clamp(CFG.p0+CFG.pN*b2-(p.density-45)/100*CFG.pDen-(p.transit-50)/100*CFG.pTransit+(p.farm-50)/100*CFG.pFarm+(p.phase-2)*CFG.pPhase,.05,.95);
+  const D=clamp(CFG.dK*p.density/100+CFG.dN*b1+(p.phase-2)*CFG.dPhase+CFG.d0,.05,.95);
+  return {I,P,D,score:scoreOf(I,P,D)};
+}
+function aggregate(p){
+  let sI=0,sP=0,sD=0,sS=0, cells=[];
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++){const m=cellMetrics(i,j,p);cells.push({i,j,...m});sI+=m.I;sP+=m.P;sD+=m.D;sS+=m.score;}
+  const n=64;
+  return { cells, I:sI/n, P:sP/n, D:sD/n, score:sS/n,
+    green:clamp(.25+p.farm*.0025,.05,.95),
+    traffic:S.chips.acc?clamp(.30+ROADB[p.road]+p.phase*.06,.05,.95):.50,
+    facility:S.chips.metro?clamp(.38+p.phase*.055+p.transit*.001,.05,.95):.50 };
+}
+const GRADE_KEY={good:'grade_good',mid:'grade_mid',low:'grade_low'};
+function grade(score){ return score>=6?'good':(score>=4?'mid':'low'); }
+
+/* ---------- 4. 地图渲染（SVG 字符串拼装） ---------- */
+const MAPW=740,MAPH=600,CELL=44,GAP=4,GS=8*CELL+7*GAP,GX=(MAPW-GS)/2,GY=(MAPH-GS)/2+8;
+const lerp=(a,b,x)=>a+(b-a)*x;
+const heatColor=s=>{const x=clamp((s-1)/9,0,1);return `rgb(${Math.round(lerp(242,194,x))},${Math.round(lerp(237,115,x))},${Math.round(lerp(232,94,x))})`;};
+function basemap(dim){
+  const op=dim?0.15:1;
+  const blocks=[[30,40,90,60],[140,30,70,50],[30,120,60,80],[600,60,80,70],[640,160,60,90],[40,430,80,70],[150,470,90,55],[560,440,90,80],[650,300,60,60],[30,300,70,70],[300,20,80,45],[420,25,70,45],[590,530,100,50],[120,540,80,45]]
+    .map(b=>`<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" rx="4" fill="#E7E4DE"/>`).join('');
+  return `<g opacity="${op}"><rect width="${MAPW}" height="${MAPH}" fill="#F1EFEA"/>${blocks}
+  <rect x="0" y="286" width="${MAPW}" height="16" fill="#EDEAE4"/><rect x="362" y="0" width="16" height="${MAPH}" fill="#EDEAE4"/>
+  <rect x="0" y="150" width="${MAPW}" height="7" fill="#EEEBE5"/><rect x="0" y="450" width="${MAPW}" height="7" fill="#EEEBE5"/>
+  <rect x="180" y="0" width="7" height="${MAPH}" fill="#EEEBE5"/><rect x="560" y="0" width="7" height="${MAPH}" fill="#EEEBE5"/>
+  <line x1="40" y1="560" x2="710" y2="70" stroke="#C2735E" stroke-width="4" stroke-dasharray="10 7" opacity=".55"/>
+  <circle cx="40" cy="560" r="6" fill="#C2735E"/><circle cx="710" cy="70" r="6" fill="#C2735E"/></g>
+  <line x1="40" y1="${MAPH-24}" x2="120" y2="${MAPH-24}" stroke="#9A968F" stroke-width="2"/>
+  <text x="40" y="${MAPH-31}" font-family="Inter,sans-serif" font-size="11" fill="#9A968F">0&#160;&#160;&#160;&#160;&#160;&#160;100m</text>
+  <circle cx="${MAPW-40}" cy="40" r="14" fill="none" stroke="#9A968F" stroke-width="1.5"/>
+  <text x="${MAPW-44.5}" y="44.5" font-family="Inter,sans-serif" font-size="13" fill="#9A968F">N</text>`;
+}
+const cellXY=(i,j)=>[GX+j*(CELL+GAP), GY+i*(CELL+GAP)];
+function boundaryRect(){ return `<rect x="${GX-16}" y="${GY-16}" width="${GS+32}" height="${GS+32}" rx="6" fill="#C2735E" fill-opacity=".05" stroke="#C2735E" stroke-width="2" stroke-dasharray="8 5"/>`; }
+function svgWrap(inner){ return `<svg viewBox="0 0 ${MAPW} ${MAPH}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`; }
+
+function renderSiteMap(){
+  const L=S.layers.site; let g='';
+  if(L.hot){ // 数据热区：地铁沿线的模糊热点
+    g+=[[120,500,60],[300,380,80],[470,250,70],[620,130,55]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}" fill="#C2735E" opacity=".12"/>`).join('');
+  }
+  if(L.bound){
+    g+=boundaryRect();
+    for(let i=0;i<8;i++)for(let j=0;j<8;j++){const[x,y]=cellXY(i,j);g+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="#C2735E" fill-opacity=".05" stroke="#C2735E" stroke-opacity=".35"/>`;}
+  }
+  $('mapsvg').innerHTML=svgWrap(basemap(!L.base)+g);
+}
+function renderEvalMap(animate){
+  const L=S.layers.eval; let g='';
+  if(S.hasRun){
+    const agg=aggregate(S.params);
+    agg.cells.forEach((c,idx)=>{
+      const[x,y]=cellXY(c.i,c.j);
+      if(L.heat){
+        const anim=animate?` class="cellin" style="animation-delay:${idx*14}ms"`:' opacity=".92"';
+        g+=`<rect data-cell="${c.i}-${c.j}" x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="${heatColor(c.score)}"${anim}/>`;
+      } else if(L.grid){
+        g+=`<rect data-cell="${c.i}-${c.j}" x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="#fff" fill-opacity=".25" stroke="#C2735E" stroke-opacity=".35"/>`;
+      }
+      if(L.grid&&L.heat) g+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="none" stroke="#fff" stroke-opacity=".25"/>`;
+    });
+    if(S.sel){const[x,y]=cellXY(S.sel.i,S.sel.j);g+=`<rect x="${x-2.5}" y="${y-2.5}" width="${CELL+5}" height="${CELL+5}" rx="4" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>`;}
+  } else if(L.grid){
+    g+=boundaryRect();
+    for(let i=0;i<8;i++)for(let j=0;j<8;j++){const[x,y]=cellXY(i,j);g+=`<rect data-cell="${i}-${j}" x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="#C2735E" fill-opacity=".04" stroke="#C2735E" stroke-opacity=".3"/>`;}
+  }
+  $('mapsvg').innerHTML=svgWrap(basemap(!L.base)+g);
+  positionPopover();
+}
+function planShares(){
+  const p=S.params.phase;
+  const farm=(S.strat.swap?PH_FARM[p]:70)/100;
+  const green=S.strat.green?.20:.12;
+  return {farm, green, house:Math.max(0,1-farm-green)};
+}
+function renderPlanMap(){
+  const L=S.layers.plan; let g='';
+  if(L.plan){
+    const sh=planShares();
+    const order=[]; for(let i=0;i<8;i++)for(let j=0;j<8;j++){const n=Math.sin(i*12.9898+j*78.233)*43758.5453;order.push({i,j,n:n-Math.floor(n)});}
+    order.sort((a,b)=>a.n-b.n);
+    const nG=Math.round(sh.green*64), nH=Math.round(sh.house*64);
+    const cat={}; order.forEach((c,k)=>{cat[c.i+'-'+c.j]= k<nG?'g':(k>=64-nH?'h':'f');});
+    const FILL={f:'#DDE1CE',h:'#CE8A76',g:'#A9C4A0'};
+    for(let i=0;i<8;i++)for(let j=0;j<8;j++){const[x,y]=cellXY(i,j);g+=`<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="3" fill="${FILL[cat[i+'-'+j]]}" opacity=".92"/>`;}
+  }
+  if(L.roads&&S.strat.roads){
+    const rY=GY+3*(CELL+GAP)-GAP/2-3, rX=GX+5*(CELL+GAP)-GAP/2-3;
+    g+=`<rect x="${GX-16}" y="${rY}" width="${GS+32}" height="9" rx="2" fill="#B7A79B"/><rect x="${rX}" y="${GY-16}" width="9" height="${GS+32}" rx="2" fill="#B7A79B"/>`;
+  }
+  g+=`<rect x="${GX-16}" y="${GY-16}" width="${GS+32}" height="${GS+32}" rx="6" fill="none" stroke="#C2735E" stroke-width="1.5" stroke-dasharray="7 5" opacity=".6"/>`;
+  $('mapsvg').innerHTML=svgWrap(basemap(!L.base)+g);
+}
+
+/* ---------- 5. 界面渲染 ---------- */
+function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400); }
+function sliderFill(el){ const p=(el.value-el.min)/(el.max-el.min)*100; el.style.background=`linear-gradient(to right,var(--acc) ${p}%,var(--trk) ${p}%)`; }
+function phaseLabel(p){ return `Phase ${p} · ${PH_YEAR[p]} ${t('phase_y')}`; }
+
+function renderImports(){
+  const defs=[['traffic','imp_traffic'],['price','imp_price'],['land','imp_land'],['pop','imp_pop']];
+  $('impList').innerHTML=defs.map(([k,key])=>{
+    const on=S.imports[k];
+    return `<div class="impcard" data-imp="${k}"><span>${t(key)}</span><span class="st" style="color:${on?'var(--ink)':'var(--mut)'}"><span class="sdot" style="background:${on?'var(--good)':'#B5B2AC'}"></span>${on?t('st_on'):t('st_off')}</span></div>`;
+  }).join('');
+  const n=Object.values(S.imports).filter(Boolean).length, pct=Math.round(n/4*100);
+  $('compPct').textContent=pct+'%'; $('compBar').style.width=pct+'%';
+  $('compList').innerHTML=defs.map(([k,key])=>`<div class="ck"><span class="${S.imports[k]?'ok':'no'}">${S.imports[k]?'✓':'○'}</span><span style="color:${S.imports[k]?'var(--ink)':'var(--mut)'}">${t(key)}</span></div>`).join('');
+}
+function renderChips(){
+  const defs=[['acc','chip_acc'],['metro','chip_metro'],['price','chip_price'],['income','chip_income']];
+  $('chipRow').innerHTML=defs.map(([k,key])=>`<button class="chip ${S.chips[k]?'':'off'}" data-chip="${k}"><span class="cdot"></span>${t(key)}</button>`).join('');
+}
+function renderDD(){
+  $('ddPhaseLabel').textContent=phaseLabel(S.params.phase);
+  $('ddPhaseList').innerHTML=[1,2,3,4].map(p=>`<button data-p="${p}" class="${p===S.params.phase?'on':''}">${phaseLabel(p)} · ${t('farm_s')} ${PH_FARM[p]}%</button>`).join('');
+}
+function renderLayers(tab,elId,defs){
+  $(elId).innerHTML=`<b>${t('ly_title')}</b>`+defs.map(([k,key])=>`<div class="lr"><span>${t(key)}</span><label class="switch"><input type="checkbox" data-layer="${tab}:${k}" ${S.layers[tab][k]?'checked':''}><i></i></label></div>`).join('');
+}
+function renderScrub(elId){
+  const el=$(elId); const p=S.params.phase;
+  el.innerHTML=`<span class="slab">${t('pl_phase')}</span><div class="strack"><div class="sline"></div>${[1,2,3,4].map(k=>{
+    const x=(k-1)/3*100; const on=k===p;
+    return `<span class="spl ${on?'on':''}" style="left:${x}%">P${k}</span><span class="sdot ${on?'on':''}" data-sp="${k}" style="left:calc(${x}% - ${on?7:5}px)"></span>`;
+  }).join('')}</div><span class="sinfo">${PH_YEAR[p]} ${t('phase_y')} · ${t('farm_s')} ${S.strat.swap?PH_FARM[p]:70}%</span>`;
+}
+function renderPhaseCards(){
+  $('phaseCards').innerHTML=[1,2,3,4].map(p=>`<div class="phasecard ${p===S.params.phase?'on':''}" data-pc="${p}"><span class="pl"><span class="pdot"></span><b>Phase ${p}</b><span class="py">${PH_YEAR[p]} ${t('phase_y')}</span></span><span class="pf">${t('farm_s')} ${PH_FARM[p]}%</span></div>`).join('');
+}
+function renderStrats(){
+  const defs=[['swap','strat_swap'],['roads','strat_roads'],['court','strat_court'],['green','strat_green']];
+  $('stratRows').innerHTML=defs.map(([k,key])=>`<div class="togglerow"><span>${t(key)}</span><label class="switch"><input type="checkbox" data-strat="${k}" ${S.strat[k]?'checked':''}><i></i></label></div>`).join('');
+}
+function renderLegendPlan(){
+  const items=[['lg_farm','#DDE1CE'],['lg_house','#CE8A76'],['lg_green','#A9C4A0'],['lg_road','#B7A79B']];
+  $('legendPlan').innerHTML=`<b>${t('lg_title')}</b>`+items.map(([k,c])=>`<div class="li"><span class="lsq" style="background:${c}"></span>${t(k)}</div>`).join('');
+}
+function buildRadar(vals){
+  const cx=85,cy=85,R=66,n=vals.length;
+  const pt=(k,v)=>{const a=(-90+360/n*k)*Math.PI/180;return [cx+R*v*Math.cos(a),cy+R*v*Math.sin(a)];};
+  let rings='',axes='';
+  [0.33,0.66,1].forEach(r=>{rings+=`<polygon points="${vals.map((_,k)=>pt(k,r).map(v=>v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#E2E0DA"/>`;});
+  vals.forEach((_,k)=>{const[x,y]=pt(k,1);axes+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E2E0DA"/>`;});
+  const poly=vals.map((v,k)=>pt(k,v).map(q=>q.toFixed(1)).join(',')).join(' ');
+  const dots=vals.map((v,k)=>{const[x,y]=pt(k,v);return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="#C2735E"/>`;}).join('');
+  return `<svg width="170" height="170" viewBox="0 0 170 170">${rings}${axes}<polygon points="${poly}" fill="#C2735E" fill-opacity=".2" stroke="#C2735E" stroke-width="2"/>${dots}</svg>`;
+}
+function suggestions(agg){
+  const p=S.params, out=[];
+  if(p.farm>60) out.push({t:S.lang==='zh'?`农田占比 ${p.farm}% 偏高`:`Farmland ${p.farm}% is high`,p:S.lang==='zh'?'阶段性置换部分农田为过渡住宅，缓冲城乡断层':'Phase in transitional housing to soften the urban–rural gap'});
+  if(p.farm<15) out.push({t:S.lang==='zh'?`农田占比 ${p.farm}% 过低`:`Farmland ${p.farm}% is low`,p:S.lang==='zh'?'保留基本农田与乡土肌理，防止过度开发':'Preserve core farmland and rural fabric against over-development'});
+  if(agg.I<.62) out.push({t:S.lang==='zh'?`整合度偏低 (${agg.I.toFixed(2)})`:`Low integration (${agg.I.toFixed(2)})`,p:S.lang==='zh'?`新增 ${p.road}m 主路并连接既有路网，提升连通性`:`Add ${p.road}m main roads linked to the existing network`});
+  if(agg.P>=.72) out.push({t:S.lang==='zh'?`私密性良好 (${agg.P.toFixed(2)})`:`Good privacy (${agg.P.toFixed(2)})`,p:S.lang==='zh'?'保留院落式过渡住宅，延续乡土生活方式':'Keep courtyard-style housing to sustain rural life patterns'});
+  if(agg.P<.5) out.push({t:S.lang==='zh'?`私密性不足 (${agg.P.toFixed(2)})`:`Low privacy (${agg.P.toFixed(2)})`,p:S.lang==='zh'?'降低开发强度或增设过渡边界空间':'Lower density or add buffer spaces'});
+  if(p.density>60) out.push({t:S.lang==='zh'?`建筑密度 ${p.density}% 偏高`:`Density ${p.density}% is high`,p:S.lang==='zh'?'控制开发强度，为绿地与公共空间留白':'Cap development intensity to reserve open space'});
+  if(!S.chips.price||!S.chips.income) out.push({t:S.lang==='zh'?'数据源不完整':'Incomplete data',p:S.lang==='zh'?'房价 / 收入数据未启用，可负担性分析缺失':'Price/income sources are off — affordability analysis unavailable'});
+  /* 兜底：所有规则都未触发时给出正向结论，避免建议区空白 */
+  if(!out.length) out.push({t:S.lang==='zh'?'各项指标均衡':'Metrics in balance',p:S.lang==='zh'?'当前参数处于适宜过渡区间，维持策略并持续监测即可':'Parameters sit in the balanced transition range — keep the current strategy and monitor'});
+  return out.slice(0,3);
+}
+function renderEvalRight(){
+  const agg=aggregate(S.params);
+  let score,scope;
+  if(!S.hasRun){ $('scoreNum').textContent='—'; $('evalScope').textContent='—';
+    $('gradeTxt').textContent=t('er_wait'); $('gradePill').classList.remove('bad');
+    $('radarBox').innerHTML=buildRadar([0,0,0,0,0,0]); $('radarLegend').innerHTML=''; $('stratList').innerHTML=''; return; }
+  if(S.sel){ const m=cellMetrics(S.sel.i,S.sel.j,S.params); score=m.score;
+    scope=(S.lang==='zh'?'区域 ':'Cell ')+String.fromCharCode(65+S.sel.i)+(S.sel.j+1)+` · Phase ${S.params.phase}`; }
+  else { score=agg.score; scope=t('scope_all')+` · Phase ${S.params.phase}`; }
+  $('evalScope').textContent=scope;
+  $('scoreNum').textContent=score.toFixed(1);
+  const g=grade(score);
+  $('gradeTxt').textContent=t(GRADE_KEY[g]);
+  $('gradePill').classList.toggle('bad',g!=='good');
+  const m=S.sel?cellMetrics(S.sel.i,S.sel.j,S.params):agg;
+  const vals=[m.I,m.P,agg.green,m.D,agg.traffic,agg.facility];
+  $('radarBox').innerHTML=buildRadar(vals);
+  const labels=['rl_i','rl_p','rl_g','rl_d','rl_t','rl_f'];
+  $('radarLegend').innerHTML=labels.map((k,x)=>`<div class="legendrow"><span class="l"><span class="ldot"></span>${t(k)}</span><span class="lv">${vals[x].toFixed(2)}</span></div>`).join('');
+  $('stratList').innerHTML=suggestions(agg).map(s=>`<div class="stratcard"><span class="sbar"></span><div><b>${s.t}</b><p>${s.p}</p></div></div>`).join('');
+}
+function renderPlanRight(){
+  const p=S.params.phase, sh=planShares();
+  $('planTitle').textContent=`${t('plan_title')} · Phase ${p}`;
+  const denKeys=['den_low','den_mid','den_midhigh','den_high'];
+  const green0=0.42, green1=clamp(0.42+(p-1)*0.05+(S.strat.green?0.08:0),0,0.95);
+  const priv1=S.strat.court?0.78:0.62;
+  const rows=[
+    [t('cmp_farm'),'70%',Math.round(sh.farm*100)+'%',sh.farm*100<70?'↓':'—','var(--acc)'],
+    [t('cmp_transit'),'80%',(80-(p-1)*10)+'%','↓','var(--acc)'],
+    [t('cmp_density'),t('den_low'),t(denKeys[Math.min(p-1,3)]),'↑','var(--ink)'],
+    [t('cmp_green'),green0.toFixed(2),green1.toFixed(2),green1>green0?'↑':'—','var(--good)'],
+    [t('cmp_priv'),'0.80',priv1.toFixed(2),priv1<0.8?'↓':'—',priv1>=0.7?'var(--good)':'var(--acc)']
+  ];
+  $('cmpList').innerHTML=rows.map(r=>`<div class="cmpline"><span class="ck">${r[0]}</span><span class="cv"><span class="old">${r[1]}</span><span class="arr" style="color:${r[4]}">${r[3]}</span><span class="new" style="color:${r[4]}">${r[2]}</span></span></div>`).join('');
+  const zh=`第 ${PH_YEAR[p]} 年：农田占比${S.strat.swap?`降至 ${PH_FARM[p]}%`:'维持 70%（未启用置换）'}${S.strat.roads?'，新增两条主路划分片区':''}${S.strat.court?'，保留院落肌理以延续乡土生活':''}${S.strat.green?'，并扩充公共绿地':''}。城乡断层被逐步缝合。`;
+  const en=`Year ${PH_YEAR[p]}: farmland ${S.strat.swap?`drops to ${PH_FARM[p]}%`:'stays at 70% (swap disabled)'}${S.strat.roads?', two new main roads structure the district':''}${S.strat.court?', courtyard fabric is preserved':''}${S.strat.green?', public green space is expanded':''}. The urban–rural gap is gradually stitched together.`;
+  $('planDesc').textContent=S.lang==='zh'?zh:en;
+  $('planStrip').innerHTML=[1,2,3,4].map(k=>`<div class="fr ${k===p?'on':''}" data-fs="${k}"><div class="th"></div><span>P${k}</span></div>`).join('');
+}
+
+/* ---------- 6. 弹窗定位 ---------- */
+function positionPopover(){
+  const pop=$('cellpop');
+  if(!S.sel||!S.hasRun||S.tab!=='eval'){ pop.style.opacity='0'; return; }
+  const m=cellMetrics(S.sel.i,S.sel.j,S.params), g=grade(m.score);
+  const name=String.fromCharCode(65+S.sel.i)+(S.sel.j+1);
+  const gcol=g==='good'?'#6BBF85':'#E09A85';
+  pop.innerHTML=`<div class="cr1">${S.lang==='zh'?'区域':'Cell'} ${name}<span class="cgd" style="background:${gcol}"></span><span class="cgt" style="color:${gcol}">${t(GRADE_KEY[g])}</span></div><div class="cr2">${t('cell_score')} ${m.score.toFixed(1)} / 10</div>`;
+  const box=$('mapbox'), sc=box.clientWidth/MAPW;
+  const [x,y]=cellXY(S.sel.i,S.sel.j);
+  let left=(x+CELL+12)*sc, top=(y-10)*sc;
+  if(S.sel.j>=5) left=(x-12)*sc-150; // 右侧格子弹窗放左边
+  pop.style.left=left+'px'; pop.style.top=Math.max(0,top)+'px'; pop.style.opacity='1';
+}
+
+/* ---------- 7. Tab 切换 & 总渲染 ---------- */
+function showTab(tab){
+  S.tab=tab; S.zoom=1; applyZoom();
+  document.querySelectorAll('.apptabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  const map={site:['lfSite','rtSite','floatsSite'],eval:['lfEval','rtEval','floatsEval'],plan:['lfPlan','rtPlan','floatsPlan']};
+  ['lfSite','lfEval','lfPlan','rtSite','rtEval','rtPlan','floatsSite','floatsEval','floatsPlan'].forEach(id=>$(id).style.display='none');
+  map[tab].forEach(id=>$(id).style.display=id.startsWith('floats')?'block':'flex');
+  if(tab==='site') renderSiteMap();
+  if(tab==='eval'){ renderEvalMap(false); renderEvalRight(); $('emptyHint').style.display=S.hasRun?'none':'flex'; }
+  if(tab==='plan'){ renderPlanMap(); renderPlanRight(); renderScrub('scrubPlan'); }
+}
+function rerenderAll(){
+  renderImports(); renderChips(); renderDD(); renderPhaseCards(); renderStrats(); renderLegendPlan();
+  renderLayers('site','layersSite',[['base','ly_base'],['hot','ly_hot'],['bound','ly_bound']]);
+  renderLayers('eval','layersEval',[['base','ly_base'],['grid','ly_grid'],['heat','ly_heat']]);
+  renderLayers('plan','layersPlan',[['base','ly_base'],['plan','ly_plan'],['roads','ly_roads']]);
+  renderScrub('scrubEval'); renderScrub('scrubPlan');
+  showTab(S.tab);
+}
+
+/* ---------- 8. 运行评估（带动画） ---------- */
+function runEvaluation(){
+  if(S.running) return;
+  if(S.tab!=='eval') showTab('eval');
+  S.running=true; S.sel=null;
+  $('emptyHint').style.display='none';
+  $('runover').classList.add('show');
+  let pct=0;
+  const timer=setInterval(()=>{
+    pct=Math.min(100,pct+4+Math.random()*5);
+    $('runbar').style.width=pct+'%'; $('runpct').textContent=Math.round(pct)+'%';
+    if(pct>=100){
+      clearInterval(timer);
+      setTimeout(()=>{
+        $('runover').classList.remove('show');
+        S.running=false; S.hasRun=true;
+        renderEvalMap(true); renderEvalRight();
+        animateScore();
+        toast(t('run_toast'));
+      },250);
+    }
+  },60);
+}
+function animateScore(){
+  const target=aggregate(S.params).score, el=$('scoreNum'), t0=performance.now();
+  const step=now=>{const k=Math.min(1,(now-t0)/700);el.textContent=(target*k).toFixed(1);if(k<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function liveUpdate(){ // 首次运行后参数变化即时重算
+  if(S.hasRun&&S.tab==='eval'){ renderEvalMap(false); renderEvalRight(); }
+  if(S.tab==='plan'){ renderPlanMap(); renderPlanRight(); renderScrub('scrubPlan'); }
+  renderScrub('scrubEval');
+}
+function setPhase(p){
+  S.params.phase=p;
+  /* 农田占比跟随阶段目标（P1 70% → P4 20%），之后仍可手动微调 */
+  S.params.farm=PH_FARM[p];
+  const sf=$('sFarm');
+  if(sf){ sf.value=PH_FARM[p]; $('vFarm').textContent=PH_FARM[p]+'%'; sliderFill(sf); }
+  renderDD(); renderPhaseCards(); renderScrub('scrubEval'); renderScrub('scrubPlan'); liveUpdate();
+}
+
+/* ---------- 9. 导出报告 ---------- */
+function exportReport(){
+  if(!S.hasRun&&S.tab==='eval'){ toast(t('toast_run_first')); return; }
+  const p=S.params, agg=aggregate(p), g=grade(agg.score), sh=planShares();
+  const zh=S.lang==='zh';
+  const lines=[
+    `# PBS Evaluator ${zh?'评估报告':'Report'}`,``,
+    `${zh?'场地':'Site'}: ${zh?'石家庄 · 地铁4号线沿线':'Shijiazhuang · Metro Line 4'} T-04 · 12.5 ha · 8×8`,
+    `${zh?'阶段':'Phase'}: Phase ${p.phase} (${PH_YEAR[p.phase]}${zh?' 年':'yr'})`,``,
+    `## ${zh?'输入参数':'Inputs'}`,
+    `- ${zh?'农田占比':'Farmland'}: ${p.farm}%`,
+    `- ${zh?'过渡住宅比例':'Transitional housing'}: ${p.transit}%`,
+    `- ${zh?'建筑密度':'Density'}: ${p.density}%`,
+    `- ${zh?'主路宽度':'Road width'}: ${p.road}m`,``,
+    `## ${zh?'评估结果':'Results'}`,
+    `- ${zh?'综合评分':'Score'}: ${agg.score.toFixed(1)} / 10 (${t(GRADE_KEY[g])})`,
+    `- Integration ${agg.I.toFixed(2)} · Privacy ${agg.P.toFixed(2)} · Density ${agg.D.toFixed(2)}`,
+    `- ${zh?'绿地率':'Green'} ${agg.green.toFixed(2)} · ${zh?'交通密度':'Traffic'} ${agg.traffic.toFixed(2)} · ${zh?'设施覆盖':'Facilities'} ${agg.facility.toFixed(2)}`,``,
+    `## ${zh?'策略建议':'Suggestions'}`,
+    ...suggestions(agg).map(s=>`- **${s.t}** — ${s.p}`),``,
+    `## ${zh?'方案（用地构成）':'Plan (land use)'}`,
+    `- ${zh?'农田':'Farmland'} ${(sh.farm*100).toFixed(0)}% · ${zh?'过渡住宅':'Housing'} ${(sh.house*100).toFixed(0)}% · ${zh?'绿地':'Green'} ${(sh.green*100).toFixed(0)}%`,``,
+    `> ${zh?'由 PBS Evaluator 前端规则模型生成':'Generated by the PBS Evaluator in-browser rule model'} · Shichen Zhou`
+  ];
+  const blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`PBS-report-phase${p.phase}.md`; a.click();
+  URL.revokeObjectURL(a.href);
+  toast(t('toast_export'));
+}
+
+/* ---------- 10. 缩放 & 全屏 ---------- */
+function applyZoom(){ $('stageZoom').style.transform=`scale(${S.zoom})`; }
+function bindZoom(idIn,idOut,idReset){
+  $(idIn).onclick=()=>{S.zoom=clamp(S.zoom+.15,.6,1.8);applyZoom();};
+  $(idOut).onclick=()=>{S.zoom=clamp(S.zoom-.15,.6,1.8);applyZoom();};
+  $(idReset).onclick=()=>{S.zoom=1;applyZoom();};
+}
+
+/* ---------- 11. 语言切换 ---------- */
+function applyLang(lang){
+  S.lang=lang;
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  $('langZh').classList.toggle('on',lang==='zh');
+  $('langEn').classList.toggle('on',lang==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(I18N[k])el.textContent=t(k);});
+  rerenderAll();
+}
+
+/* ---------- 12. 事件绑定 ---------- */
+document.addEventListener('DOMContentLoaded',()=>{
+  /* 语言 */
+  $('langZh').onclick=()=>applyLang('zh');
+  $('langEn').onclick=()=>applyLang('en');
+  /* Tab */
+  document.querySelectorAll('.apptabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+  $('toEval').onclick=()=>showTab('eval');
+  /* 运行 */
+  $('runTop').onclick=runEvaluation;
+  $('runLeft').onclick=runEvaluation;
+  /* 滑块 */
+  [['sFarm','vFarm','farm'],['sTransit','vTransit','transit'],['sDensity','vDensity','density']].forEach(([sid,vid,key])=>{
+    const el=$(sid); sliderFill(el);
+    el.addEventListener('input',()=>{S.params[key]=+el.value;$(vid).textContent=el.value+'%';sliderFill(el);liveUpdate();});
+  });
+  /* 分段控件 */
+  $('segRoad').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    $('segRoad').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    S.params.road=+b.dataset.v; liveUpdate();
+  });
+  /* 下拉 */
+  $('ddPhase').querySelector('.ddbtn').onclick=e=>{e.stopPropagation();$('ddPhase').classList.toggle('open');};
+  $('ddPhaseList').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    setPhase(+b.dataset.p); $('ddPhase').classList.remove('open');
+  });
+  document.addEventListener('click',e=>{ if(!e.target.closest('#ddPhase')) $('ddPhase').classList.remove('open'); });
+  /* 数据源 chips */
+  $('chipRow').addEventListener('click',e=>{
+    const b=e.target.closest('.chip'); if(!b)return;
+    const k=b.dataset.chip; S.chips[k]=!S.chips[k];
+    renderChips(); liveUpdate();
+    toast(t(S.chips[k]?'toast_chip_on':'toast_chip_off'));
+  });
+  /* 场地数据导入 */
+  $('impList').addEventListener('click',e=>{
+    const c=e.target.closest('.impcard'); if(!c)return;
+    const k=c.dataset.imp; S.imports[k]=!S.imports[k];
+    renderImports(); toast(t('toast_imp'));
+  });
+  /* 图层开关（三个面板共用委托） */
+  ['layersSite','layersEval','layersPlan'].forEach(id=>{
+    $(id).addEventListener('change',e=>{
+      const inp=e.target.closest('input[data-layer]'); if(!inp)return;
+      const [tab,k]=inp.dataset.layer.split(':');
+      S.layers[tab][k]=inp.checked;
+      if(tab==='site')renderSiteMap(); if(tab==='eval')renderEvalMap(false); if(tab==='plan')renderPlanMap();
+    });
+  });
+  /* 地图点格子（评估 Tab） */
+  $('mapsvg').addEventListener('click',e=>{
+    if(S.tab!=='eval'||!S.hasRun)return;
+    const r=e.target.closest('[data-cell]'); if(!r)return;
+    const [i,j]=r.dataset.cell.split('-').map(Number);
+    S.sel=(S.sel&&S.sel.i===i&&S.sel.j===j)?null:{i,j};
+    renderEvalMap(false); renderEvalRight();
+  });
+  window.addEventListener('resize',positionPopover);
+  /* 缩放 */
+  bindZoom('zIn','zOut','zReset'); bindZoom('zIn2','zOut2','zReset2');
+  /* 场地页工具条：缩放 / 复位 / 划定范围 */
+  const st=$('siteTools');
+  if(st) st.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-st]'); if(!b)return;
+    const k=b.dataset.st;
+    if(k==='in'){S.zoom=clamp(S.zoom+.15,.6,1.8);applyZoom();}
+    if(k==='out'){S.zoom=clamp(S.zoom-.15,.6,1.8);applyZoom();}
+    if(k==='fit'){S.zoom=1;applyZoom();}
+    if(k==='bound'){
+      S.layers.site.bound=!S.layers.site.bound;
+      b.classList.toggle('on',S.layers.site.bound);
+      renderLayers('site','layersSite',[['base','ly_base'],['hot','ly_hot'],['bound','ly_bound']]);
+      renderSiteMap();
+    }
+  });
+  /* 阶段滑杆（两个 Tab） */
+  ['scrubEval','scrubPlan'].forEach(id=>$(id).addEventListener('click',e=>{
+    const d=e.target.closest('[data-sp]'); if(d) setPhase(+d.dataset.sp);
+  }));
+  /* 方案阶段卡片 & 预览条 & 策略开关 */
+  $('phaseCards').addEventListener('click',e=>{const c=e.target.closest('[data-pc]');if(c)setPhase(+c.dataset.pc);});
+  $('planStrip').addEventListener('click',e=>{const c=e.target.closest('[data-fs]');if(c)setPhase(+c.dataset.fs);});
+  $('stratRows').addEventListener('change',e=>{
+    const inp=e.target.closest('input[data-strat]'); if(!inp)return;
+    S.strat[inp.dataset.strat]=inp.checked;
+    renderPlanMap(); renderPlanRight(); renderScrub('scrubPlan');
+  });
+  /* 导出 */
+  $('exportLeft').onclick=exportReport;
+  $('exportRight').onclick=exportReport;
+  /* 全屏 */
+  $('fsBtn').onclick=()=>{
+    const app=$('app'); const fs=app.classList.toggle('fs');
+    document.body.classList.toggle('no-scroll',fs);
+    $('fsBtn').textContent=fs?'✕':'⛶';
+    positionPopover();
+  };
+  /* 页脚占位链接 */
+  $('nextProj').onclick=()=>toast(t('toast_soon'));
+  $('allWorks').onclick=()=>toast(t('toast_soon'));
+  /* 初始渲染 */
+  rerenderAll();
+});
+
+</script>
+</body>
+</html>
